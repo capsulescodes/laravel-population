@@ -13,6 +13,6 @@ class PopulateCommand extends Command
 
     public function handle()
     {
-        $this->output( "Hello World" );
+        $this->info( "Hello World" );
     }
 }
