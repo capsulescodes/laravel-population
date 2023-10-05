@@ -1,0 +1,12 @@
+{
+    "name" : "capsulescodes/laravel-population",
+    "description" : "Laravel command to manage your database in real time",
+    "type" : "library",
+    "license" : "MIT",
+    "keywords" : [ "laravel" ],
+    "authors" : [ { "name": "mho22", "email": "yannick@capsules.codes" } ],
+    "autoload" : { "psr-4" : { "CapsulesCodes\\Population\\" : "src/" } },
+    "require-dev" : { "orchestra/testbench": "^8.12", "pestphp/pest": "^2.20" },
+    "extra" : { "laravel" : { "providers" : [ "CapsulesCodes\\Population\\Providers\\PopulationServiceProvider" ] } },
+    "config" : { "allow-plugins": { "pestphp/pest-plugin": true }  }
+}
