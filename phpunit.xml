@@ -14,4 +14,8 @@
             <directory suffix=".php">./src</directory>
         </include>
     </source>
+    <php>
+        <env name="DB_DATABASE" value="package" />
+        <env name="DB_USERNAME" value="root" />
+    </php>
 </phpunit>

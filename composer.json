@@ -7,6 +7,7 @@
     "authors" : [ { "name": "mho22", "email": "yannick@capsules.codes" } ],
     "autoload" : { "psr-4" : { "CapsulesCodes\\Population\\" : "src/" } },
     "autoload-dev" : { "psr-4" : { "CapsulesCodes\\Population\\Tests\\" : "tests/" } },
+    "require": { "doctrine/dbal": "^3.7" },
     "require-dev" : { "orchestra/testbench" : "^8.12", "pestphp/pest" : "^2.20" },
     "extra" : { "laravel" : { "providers" : [ "CapsulesCodes\\Population\\Providers\\PopulationServiceProvider" ] } },
     "config" : { "allow-plugins" : { "pestphp/pest-plugin": true }  }

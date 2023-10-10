@@ -1,18 +1,22 @@
 <?php
 
+use CapsulesCodes\Population\Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Config;
 use CapsulesCodes\Population\Dumper;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Env;
+use Illuminate\Support\Collection;
 
+
+uses( TestCase::class );
 
 beforeEach( function()
 {
     $this->disk = Storage::build( [ 'driver' => 'local', 'root' => storage_path() ] );
 
-    $this->path = config( 'population.path' );
+    $this->path = Config::get( 'population.path' );
 
-    $this->database = config( 'database.connections.mysql' )[ 'database' ];
+    $this->database = Config::get( 'database.connections.mysql.database' );
 });
 
 afterEach( function()
@@ -21,6 +25,17 @@ afterEach( function()
 });
 
 
+
+it( "returns false if current database doesn't exist", function()
+{
+    Config::set( 'database.connections.mysql.database', 'laravel' );
+
+    $dumper = new Dumper();
+
+    expect( $dumper->copy() )->toBeFalse();
+
+    Config::set( 'database.connections.mysql.database', $this->database );
+});
 
 
 it( "creates a dump directory", function()
@@ -37,9 +52,7 @@ it( "creates a dump directory with a given path", function()
 {
     $path = "app/databases";
 
-    Env::getRepository()->set( 'DB_DUMP_PATH', $path );
-
-    $this->refreshApplication();
+    Config::set( 'population.path', $path );
 
     $dumper = new Dumper();
 
@@ -49,9 +62,7 @@ it( "creates a dump directory with a given path", function()
 
     $this->disk->deleteDirectory( $path );
 
-    Env::getRepository()->clear( 'DB_DUMP_PATH' );
-
-    $this->refreshApplication();
+    Config::set( 'population.path', $this->path );
 });
 
 
@@ -63,7 +74,7 @@ it( "makes a dump of the current database", function()
 
     $dumper->copy();
 
-    expect( collect( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
 });
 
 
@@ -75,7 +86,7 @@ it( "makes multiple dumps of the current database", function()
 
     $dumper->copy();
 
-    expect( collect( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
 
     Carbon::setTestNow( Carbon::now()->addMinute() );
 
@@ -83,7 +94,7 @@ it( "makes multiple dumps of the current database", function()
 
     $dumper->copy();
 
-    expect( collect( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
 });
 
 
@@ -95,17 +106,28 @@ it( "removes the latest dump of the current database", function()
 
     $dumper->copy();
 
-    expect( collect( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+
+    Carbon::setTestNow( Carbon::now()->addMinute() );
+
+    $date = Carbon::now()->format( 'Y-m-d-H-i-s' );
+
+    $dumper->copy();
+
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
 
     $dumper->remove();
 
-    expect( collect( $this->disk->files( $this->path ) ) )->not()->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->not()->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
 });
 
-
-it( "returns an error if current database doesn't exist", function()
+it( "removes the existing directory if no database files", function()
 {
     $dumper = new Dumper();
 
-    expect( $dumper->copy() )->toBeFalse();
+    $dumper->copy();
+
+    $dumper->remove();
+
+    expect( $this->disk->exists( $this->path ) )->not()->toBeTrue();
 });
