@@ -1,6 +1,5 @@
 <?php
 
-use CapsulesCodes\Population\Tests\TestCase;
 use CapsulesCodes\Population\Tests\App\Database\Seeders\FooSeeder;
 use Illuminate\Support\Str;
 use CapsulesCodes\Population\Replicator;
@@ -9,8 +8,6 @@ use CapsulesCodes\Population\Tests\App\Models\Base\Foo as BaseFoo;
 use CapsulesCodes\Population\Tests\App\Models\New\Foo as NewFoo;
 use Illuminate\Support\Collection;
 
-
-uses( TestCase::class );
 
 beforeEach( function()
 {
@@ -35,10 +32,6 @@ beforeEach( function()
     $this->formulas = Collection::make( [ "baz" => null, "bar" => [ "", "", "\"\"" ], "qux" => [ "", "", "\"\"" ] ] );
 });
 
-afterEach( function()
-{
-    NewFoo::truncate();
-});
 
 
 
@@ -48,6 +41,7 @@ it( 'is dirty after a population occurred', function()
 
     expect( $this->populator->isDirty() )->toBeTrue();
 });
+
 
 it( 'can delete a column', function()
 {
@@ -60,6 +54,7 @@ it( 'can delete a column', function()
     $records->each( function( $new ) { expect( $new->getAttribute( 'baz' ) )->toBeNull(); } );
 });
 
+
 it( 'can populate a new column', function()
 {
     $this->bases->each( function( $base ) { expect( $base->getAttribute( 'bar' ) )->toBeNull(); } );
@@ -71,9 +66,10 @@ it( 'can populate a new column', function()
     $records->each( function( $new ) { expect( $new->getAttribute( 'bar' ) )->not()->toBeNull(); } );
 });
 
+
 it( 'can populate a modified column', function()
 {
-    $this->bases->each( function( $base ) { expect( $base->getAttribute( 'qux' ) )->toBeNumeric(); } );
+    $this->bases->each( function( $base ) { expect( $base->getAttribute( 'qux' ) )->toBeInt(); } );
 
     $this->populator->process( 'foo', $this->uuid, $this->formulas, $this->records );
 

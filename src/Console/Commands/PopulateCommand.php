@@ -13,16 +13,20 @@ use Illuminate\Console\View\Components\BulletList;
 use Illuminate\Support\Collection;
 use Exception;
 
+
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\text;
 
 
-
 class PopulateCommand extends BaseCommand
 {
-    protected $signature = "populate";
+    protected $signature = "populate
+                                {--path=* : The path(s) to the migrations files to be executed}
+                                {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}";
 
     protected $description = "Manage your database using prompts";
+
+    protected string $uuid;
 
 
     public function __construct( Dumper $dumper, Replicator $replicator, Populator $populator )
@@ -35,25 +39,20 @@ class PopulateCommand extends BaseCommand
     }
 
 
-    public function handle()
+    public function handle() : int
     {
         $this->uuid = Str::orderedUuid()->getHex()->serialize();
 
         $this->registerShutdownHandler();
 
-        $this->migrator->usingConnection( null, function()
+        return $this->migrator->usingConnection( null, function()
         {
             $this->migrator->setOutput( $this->output );
 
-            if( ! $this->dumper->copy() )
-            {
-                $this->write( Error::class, "An error occurred when dumping your database. Verify your credentials." );
-
-                return 1;
-            }
-
             try
             {
+                $this->dumper->copy();
+
                 $this->migrator->replicate( $this->uuid, $this->migrator->getMigrationFiles( $this->getMigrationPaths() ) );
 
                 $this->migrator->inspect( $this->uuid );
@@ -62,33 +61,20 @@ class PopulateCommand extends BaseCommand
 
                 return 0;
             }
-            catch( Exception $e )
+            catch( Exception $exception )
             {
-                $this->migrator->clean( $this->uuid );
+                $this->write( Error::class, $exception->getMessage() );
 
-                $this->dumper->remove();
-
-                throw $e;
+                $this->revert();
 
                 return 1;
             }
         });
-
-
-        return 0;
     }
 
-    protected function registerShutdownHandler()
+    protected function registerShutdownHandler() : void
     {
-        register_shutdown_function( function()
-        {
-            if( ! $this->populator->isDirty() )
-            {
-                $this->migrator->clean( $this->uuid );
-
-                $this->dumper->remove();
-            }
-        });
+        register_shutdown_function( function(){ $this->revert(); } );
     }
 
     protected function populate() : void
@@ -125,11 +111,9 @@ class PopulateCommand extends BaseCommand
 
         $records = $this->load( $table );
 
-
-
         if( $records->isEmpty() )
         {
-            $this->write( Info::class, "The '{$table}' table columns have been updated but it seems the table has no records. Skipping record conversion" );
+            $this->write( Info::class, "The '{$table}' table columns have been updated but it seems the table has no records. Skipping record conversion." );
         }
         else
         {
@@ -141,12 +125,7 @@ class PopulateCommand extends BaseCommand
 
                     preg_match( '/^\s*fn\s*\(\s*(\$[\w\d]*\s*(?:,\s*\$[\w\d]*)?)?\s*\)\s*=>\s*(.+)\s*/', $input, $matches );
 
-                    if( Collection::make( $matches )->isEmpty() )
-                    {
-                        $this->write( Error::class, "The function did not respect the required format" );
-
-                        exit();
-                    }
+                    if( Collection::make( $matches )->isEmpty() ) throw new Exception( "The function did not respect the required format." );
 
                     $formulas[ $column ] = $matches;
                 }
@@ -164,20 +143,26 @@ class PopulateCommand extends BaseCommand
     {
         $class = $input ?? 'App\\Models\\' . Str::studly( Str::singular( $table ) ) ;
 
-        try
+        if( class_exists( $class ) ) return $class::all();
+
+        if( ! $input )
         {
-            class_exists( $class );
+            return $this->load( null, text( "The '{$class}' model path does not exist, please provide the correct path.", "App\\Models\\" ) );
         }
-        catch( Exception )
+        else
         {
-            if( ! $input ) $this->load( null, text( "The '{$class}' model path does not exist, please provide the correct path", "App\\Models\\" ) );
-
-            $this->write( Error::class, "The model file was not found" );
-
-            exit();
+            throw new Exception( "The model file was not found." );
         }
+    }
 
-        return $class::all();
+    protected function revert() : void
+    {
+        if( ! $this->populator->isDirty() )
+        {
+            $this->migrator->clean( $this->uuid );
+
+            $this->dumper->remove();
+        }
     }
 
     protected function write( $component, ...$arguments )

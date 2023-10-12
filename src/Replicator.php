@@ -5,7 +5,7 @@ namespace CapsulesCodes\Population;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\Task;
-use Illuminate\Console\View\Components\Error;
+use Illuminate\Console\View\Components\Warn;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
@@ -38,12 +38,7 @@ class Replicator extends Migrator
 
     public function replicate( string $uuid, array $files ) : void
     {
-        if( ! $this->hasRunAnyMigrations() )
-        {
-            $this->write( Error::class, "No tables migrated yet, please run artisan migrate" );
-
-            exit();
-        }
+        if( ! $this->hasRunAnyMigrations() ) throw new Exception( "No tables migrated yet, please run artisan migrate." );
 
         $this->requireFiles( $files );
 
@@ -96,20 +91,27 @@ class Replicator extends Migrator
     {
         foreach( $tables->keys() as $table )
         {
-            $changes = Collection::make();
+            $oldTable = Collection::make( Schema::getColumnListing( $table ) );
 
-            $columns = Collection::make( Schema::getColumnListing( $table ) )->merge( Schema::getColumnListing( "{$table}{$uuid}" ) )->unique();
+            $newTable = Collection::make( Schema::getColumnListing( "{$table}{$uuid}" ) );
 
-            foreach( $columns as $column )
+            if( $oldTable->isNotEmpty() && $newTable->isNotEmpty() )
             {
-                try { $old = Schema::getColumnType( $table, $column ); } catch( Exception ) { $old = null; }
+                $changes = Collection::make();
 
-                try { $new = Schema::getColumnType( "{$table}{$uuid}", $column ); } catch( Exception ) { $new = null; }
+                $columns = $oldTable->merge( $newTable )->unique();
 
-                if( $old !== $new ) $changes->put( $column, [ 'old' => $old, 'new' => $new ] );
+                foreach( $columns as $column )
+                {
+                    try { $oldColumn = Schema::getColumnType( $table, $column ); } catch( Exception ) { $oldColumn = null; }
+
+                    try { $newColumn = Schema::getColumnType( "{$table}{$uuid}", $column ); } catch( Exception ) { $newColumn = null; }
+
+                    if( $oldColumn !== $newColumn ) $changes->put( $column, [ 'old' => $oldColumn, 'new' => $newColumn ] );
+                }
+
+                if( $changes->isNotEmpty() ) $this->dirties->put( $table, $changes );
             }
-
-            if( $changes->isNotEmpty() ) $this->dirties->put( $table, $changes );
         }
     }
 

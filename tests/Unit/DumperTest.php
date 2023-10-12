@@ -1,14 +1,11 @@
 <?php
 
-use CapsulesCodes\Population\Tests\TestCase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Config;
 use CapsulesCodes\Population\Dumper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
-
-uses( TestCase::class );
 
 beforeEach( function()
 {
@@ -26,13 +23,14 @@ afterEach( function()
 
 
 
+
 it( "returns false if current database doesn't exist", function()
 {
-    Config::set( 'database.connections.mysql.database', 'laravel' );
+    Config::set( 'database.connections.mysql.database', 'no-package' );
 
     $dumper = new Dumper();
 
-    expect( $dumper->copy() )->toBeFalse();
+    expect( fn() => $dumper->copy() )->toThrow( Exception::class );
 
     Config::set( 'database.connections.mysql.database', $this->database );
 });
@@ -70,11 +68,13 @@ it( "makes a dump of the current database", function()
 {
     $dumper = new Dumper();
 
-    $date = Carbon::now()->format( 'Y-m-d-H-i-s' );
+    $date = Carbon::now();
+
+    Carbon::setTestNow( $date );
 
     $dumper->copy();
 
-    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 });
 
 
@@ -82,19 +82,19 @@ it( "makes multiple dumps of the current database", function()
 {
     $dumper = new Dumper();
 
-    $date = Carbon::now()->format( 'Y-m-d-H-i-s' );
+    $date = Carbon::now();
+
+    Carbon::setTestNow( $date );
 
     $dumper->copy();
 
-    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 
-    Carbon::setTestNow( Carbon::now()->addMinute() );
-
-    $date = Carbon::now()->format( 'Y-m-d-H-i-s' );
+    Carbon::setTestNow( $date->addMinute() );
 
     $dumper->copy();
 
-    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 });
 
 
@@ -102,24 +102,25 @@ it( "removes the latest dump of the current database", function()
 {
     $dumper = new Dumper();
 
-    $date = Carbon::now()->format( 'Y-m-d-H-i-s' );
+    $date = Carbon::now();
+
+    Carbon::setTestNow( $date );
 
     $dumper->copy();
 
-    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 
-    Carbon::setTestNow( Carbon::now()->addMinute() );
-
-    $date = Carbon::now()->format( 'Y-m-d-H-i-s' );
+    Carbon::setTestNow( $date->addMinute() );
 
     $dumper->copy();
 
-    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 
     $dumper->remove();
 
-    expect( Collection::make( $this->disk->files( $this->path ) ) )->not()->toContain( "{$this->path}/{$this->database}-{$date}.sql" );
+    expect( Collection::make( $this->disk->files( $this->path ) ) )->not()->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 });
+
 
 it( "removes the existing directory if no database files", function()
 {

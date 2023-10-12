@@ -1,13 +1,11 @@
 <?php
 
-use CapsulesCodes\Population\Tests\TestCase;
 use Illuminate\Support\Str;
 use CapsulesCodes\Population\Replicator;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
 
-uses( TestCase::class );
 
 beforeEach( function()
 {
@@ -25,6 +23,7 @@ afterEach( function()
 
 
 
+
 it( 'can replicate existing migrations', function()
 {
     $base = Collection::make( Schema::getConnection()->getDoctrineSchemaManager()->listTableNames() );
@@ -38,8 +37,18 @@ it( 'can replicate existing migrations', function()
     expect( $new->toArray() )->toContain( "foo{$this->uuid}", ...$base->toArray() );
 });
 
+it( 'can determine no changes occurred in migrations', function()
+{
+    $this->replicator->path( 'tests/app/database/migrations/new/qux_table' );
 
-it( 'can list each tables from database', function()
+    $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
+
+    $this->replicator->inspect( $this->uuid );
+
+    expect( $this->replicator->getDirties() )->toBeEmpty();
+});
+
+it( 'can list modified migrations table from database', function()
 {
     $this->replicator->path( 'tests/app/database/migrations/new' );
 
@@ -47,7 +56,7 @@ it( 'can list each tables from database', function()
 
     $this->replicator->inspect( $this->uuid );
 
-    expect( $this->replicator->getDirties()->keys() )->toContain( 'foo' , 'bar' );
+    expect( $this->replicator->getDirties()->keys() )->toContain( 'foo' );
 });
 
 

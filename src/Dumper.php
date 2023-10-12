@@ -4,19 +4,20 @@ namespace CapsulesCodes\Population;
 
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Collection;
+use Exception;
 
 
 class Dumper
 {
     private FileSystemAdapter $disk;
 
-    private string $filename;
-
     private string $path;
+
+    private string $filename;
 
 
     public function __construct()
@@ -24,6 +25,8 @@ class Dumper
         $this->disk = Storage::build( [ 'driver' => 'local', 'root' => storage_path() ] );
 
         $this->path = Config::get( 'population.path' );
+
+        $this->filename = "";
     }
 
     protected function makeDirectory() : void
@@ -47,9 +50,9 @@ class Dumper
         return $result->successful();
     }
 
-    public function copy() : bool
+    public function copy() : void
     {
-        if( ! $this->databaseExists() ) return false;
+        if( ! $this->databaseExists() ) throw new Exception( "An error occurred when dumping your database. Verify your credentials." );
 
         $this->makeDirectory();
 
@@ -63,7 +66,7 @@ class Dumper
 
         $result = Process::run( $command );
 
-        return $result->successful();
+        if( $result->failed() ) throw new Exception( "An error occurred when dumping your database. Verify your credentials." );
     }
 
 
