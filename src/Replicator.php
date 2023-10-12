@@ -6,7 +6,6 @@ use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\Task;
 use Illuminate\Console\View\Components\Error;
-use Illuminate\Console\View\Components\Warn;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
@@ -15,8 +14,8 @@ use Exception;
 
 class Replicator extends Migrator
 {
-    private Collection $tables;
-    private Collection $dirties;
+    protected Collection $tables;
+    protected Collection $dirties;
 
 
     public function __construct( Migrator $migrator )

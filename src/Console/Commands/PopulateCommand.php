@@ -7,20 +7,19 @@ use CapsulesCodes\Population\Dumper;
 use CapsulesCodes\Population\Replicator;
 use CapsulesCodes\Population\Populator;
 use Illuminate\Support\Str;
-use Exception;
+use Illuminate\Console\View\Components\Error;
 use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\BulletList;
-use CapsulesCodes\Population\Traits\WriteTrait;
 use Illuminate\Support\Collection;
+use Exception;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\text;
 
 
 
 class PopulateCommand extends BaseCommand
 {
-    use WriteTrait;
-
     protected $signature = "populate";
 
     protected $description = "Manage your database using prompts";
@@ -33,7 +32,6 @@ class PopulateCommand extends BaseCommand
         $this->dumper = $dumper;
         $this->migrator = $replicator;
         $this->populator = $populator;
-
     }
 
 
@@ -45,11 +43,14 @@ class PopulateCommand extends BaseCommand
 
         $this->migrator->usingConnection( null, function()
         {
-            $this->dumper->setOutput( $this->output );
             $this->migrator->setOutput( $this->output );
-            $this->populator->setOutput( $this->output );
 
-            $this->dumper->copy();
+            if( ! $this->dumper->copy() )
+            {
+                $this->write( Error::class, "An error occurred when dumping your database. Verify your credentials." );
+
+                return 1;
+            }
 
             try
             {
@@ -81,7 +82,7 @@ class PopulateCommand extends BaseCommand
     {
         register_shutdown_function( function()
         {
-            if( ! $this->populator->isModified() )
+            if( ! $this->populator->isDirty() )
             {
                 $this->migrator->clean( $this->uuid );
 
@@ -89,7 +90,6 @@ class PopulateCommand extends BaseCommand
             }
         });
     }
-
 
     protected function populate() : void
     {
@@ -108,7 +108,7 @@ class PopulateCommand extends BaseCommand
 
             if( $confirmed )
             {
-                $this->populator->listen( $this->uuid, $this->migrator->getDirties() );
+                $this->request( $table, $changes );
             }
             else
             {
@@ -116,6 +116,72 @@ class PopulateCommand extends BaseCommand
             }
         }
 
-        if( $this->populator->isModified() ) $this->write( Info::class, 'Population succeeded.' );
+        if( $this->populator->isDirty() ) $this->write( Info::class, 'Population succeeded.' );
+    }
+
+    protected function request( $table, $changes ) : void
+    {
+        $formulas = Collection::make();
+
+        $records = $this->load( $table );
+
+
+
+        if( $records->isEmpty() )
+        {
+            $this->write( Info::class, "The '{$table}' table columns have been updated but it seems the table has no records. Skipping record conversion" );
+        }
+        else
+        {
+            foreach( $changes as $column => $change )
+            {
+                if( $change[ 'new' ] )
+                {
+                    $input = text( "How would you like to convert the records for the column '{$column}' of type '{$change[ 'new' ]}'?", 'fn( $value, $model ) => $value' );
+
+                    preg_match( '/^\s*fn\s*\(\s*(\$[\w\d]*\s*(?:,\s*\$[\w\d]*)?)?\s*\)\s*=>\s*(.+)\s*/', $input, $matches );
+
+                    if( Collection::make( $matches )->isEmpty() )
+                    {
+                        $this->write( Error::class, "The function did not respect the required format" );
+
+                        exit();
+                    }
+
+                    $formulas[ $column ] = $matches;
+                }
+                else
+                {
+                    $formulas[ $column ] = null;
+                }
+            }
+        }
+
+        $this->populator->process( $table, $this->uuid, $formulas, $records );
+    }
+
+    protected function load( $table = null, $input = null ) : Collection
+    {
+        $class = $input ?? 'App\\Models\\' . Str::studly( Str::singular( $table ) ) ;
+
+        try
+        {
+            class_exists( $class );
+        }
+        catch( Exception )
+        {
+            if( ! $input ) $this->load( null, text( "The '{$class}' model path does not exist, please provide the correct path", "App\\Models\\" ) );
+
+            $this->write( Error::class, "The model file was not found" );
+
+            exit();
+        }
+
+        return $class::all();
+    }
+
+    protected function write( $component, ...$arguments )
+    {
+        ( new $component( $this->output ) )->render( ...$arguments );
     }
 }

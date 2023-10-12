@@ -14,9 +14,7 @@ return new class extends Migration
         Schema::create( $this->table, function( Blueprint $table )
         {
             $table->id();
-            $table->string( 'foo' );
             $table->string( 'bar' );
-            $table->string( 'qux' );
             $table->timestamps();
         });
     }

@@ -1,16 +1,18 @@
 <?php
 
-use CapsulesCodes\Population\Tests\DatabaseTestCase;
+use CapsulesCodes\Population\Tests\TestCase;
 use Illuminate\Support\Str;
 use CapsulesCodes\Population\Replicator;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
 
-uses( DatabaseTestCase::class );
+uses( TestCase::class );
 
 beforeEach( function()
 {
+    $this->loadMigrationsFrom( 'tests/app/database/migrations/base' );
+
     $this->uuid = Str::orderedUuid()->getHex()->serialize();
 
     $this->replicator = new Replicator( App::make( 'migrator' ) );
@@ -27,7 +29,7 @@ it( 'can replicate existing migrations', function()
 {
     $base = Collection::make( Schema::getConnection()->getDoctrineSchemaManager()->listTableNames() );
 
-    $this->replicator->path( 'tests/database/migrations/new/foo_table.php' );
+    $this->replicator->path( 'tests/app/database/migrations/new/foo_table.php' );
 
     $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -39,7 +41,7 @@ it( 'can replicate existing migrations', function()
 
 it( 'can list each tables from database', function()
 {
-    $this->replicator->path( 'tests/database/migrations/new' );
+    $this->replicator->path( 'tests/app/database/migrations/new' );
 
     $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -51,7 +53,7 @@ it( 'can list each tables from database', function()
 
 it( 'can determine if foo column has no changes', function()
 {
-    $this->replicator->path( 'tests/database/migrations/new' );
+    $this->replicator->path( 'tests/app/database/migrations/new' );
 
     $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -63,7 +65,7 @@ it( 'can determine if foo column has no changes', function()
 
 it( 'can determine if bar column has been added', function()
 {
-    $this->replicator->path( 'tests/database/migrations/new' );
+    $this->replicator->path( 'tests/app/database/migrations/new' );
 
     $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -79,7 +81,7 @@ it( 'can determine if bar column has been added', function()
 
 it( 'can determine if baz column has been removed', function()
 {
-    $this->replicator->path( 'tests/database/migrations/new' );
+    $this->replicator->path( 'tests/app/database/migrations/new' );
 
     $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -95,7 +97,7 @@ it( 'can determine if baz column has been removed', function()
 
 it( 'can determine if qux column type has been modified', function()
 {
-    $this->replicator->path( 'tests/database/migrations/new' );
+    $this->replicator->path( 'tests/app/database/migrations/new' );
 
     $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 

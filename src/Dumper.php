@@ -2,7 +2,6 @@
 
 namespace CapsulesCodes\Population;
 
-use CapsulesCodes\Population\Traits\WriteTrait;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
@@ -13,11 +12,10 @@ use Illuminate\Support\Collection;
 
 class Dumper
 {
-    use WriteTrait;
-
-
     private FileSystemAdapter $disk;
+
     private string $filename;
+
     private string $path;
 
 
@@ -51,7 +49,7 @@ class Dumper
 
     public function copy() : bool
     {
-        if( ! $this->databaseExists() ) $this->write( Error::class, "An error occurred when dumping your database. Verify your credentials." );
+        if( ! $this->databaseExists() ) return false;
 
         $this->makeDirectory();
 
