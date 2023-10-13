@@ -14,7 +14,6 @@ class PopulationServiceProvider extends ServiceProvider
     public function register() : void
     {
         $this->app->bind( Replicator::class, fn( Application $app ) => new Replicator( $app[ 'migrator' ] ) );
-        $this->app->bind( Purgator::class, fn( Application $app ) => new Purgator( $app[ 'migrator' ] ) );
     }
 
     public function boot() : void

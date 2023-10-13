@@ -2,58 +2,48 @@
 
 namespace CapsulesCodes\Population\Console\Commands;
 
-use Illuminate\Database\Console\Migrations\BaseCommand;
+use Illuminate\Console\Command;
 use CapsulesCodes\Population\Dumper;
-use CapsulesCodes\Population\Purgator;
 use Illuminate\Console\View\Components\Warn;
 use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\Error;
 use Exception;
 
 
-class PopulateRollbackCommand extends BaseCommand
+class PopulateRollbackCommand extends Command
 {
     protected $signature = 'populate:rollback';
 
     protected $description = 'Migration changes rollback';
 
     protected Dumper $dumper;
-    protected Purgator $migrator;
 
 
-    public function __construct( Dumper $dumper, Purgator $purgator )
+    public function __construct( Dumper $dumper )
     {
         parent::__construct();
 
         $this->dumper = $dumper;
-        $this->migrator = $purgator;
     }
 
     public function handle() : int
     {
         $this->write( Warn::class, "The rollback command will only set back the latest copy of your database. You'll have to modify your migrations and models manually." );
 
-        return $this->migrator->usingConnection( null, function()
+        try
         {
-            $this->migrator->setOutput( $this->output );
+            $this->dumper->revert();
 
-            try
-            {
-                $this->dumper->revert();
+            $this->write( Info::class, "Database copy successfully reloaded" );
 
-                $this->migrator->purge( $this->migrator->getMigrationFiles( $this->getMigrationPaths() ) );
+            return 0;
+        }
+        catch( Exception $exception )
+        {
+            $this->write( Error::class, $exception->getMessage() );
 
-                $this->write( Info::class, "Database copy successfully reloaded" );
-
-                return 0;
-            }
-            catch( Exception $exception )
-            {
-                $this->write( Error::class, $exception->getMessage() );
-
-                return 1;
-            }
-        });
+            return 1;
+        }
     }
 
     protected function write( $component, ...$arguments ) : void

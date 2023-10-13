@@ -1,6 +1,7 @@
 <?php
 
 use CapsulesCodes\Population\Tests\App\Database\Seeders\FooSeeder;
+use CapsulesCodes\Population\Tests\App\Models\Base\Foo;
 
 
 beforeEach( function()
@@ -45,11 +46,13 @@ it( 'returns an error if the database connection is incorrect', function()
 });
 
 
-it( 'updates the seeded table columns and populates successfully', function()
+it( 'rolls back the latest database dump', function()
 {
     $this->loadMigrationsFrom( 'tests/app/database/migrations/base' );
 
     $this->seed( FooSeeder::class );
+
+    $first = Foo::all()->toArray();
 
     $this->artisan( 'populate', $this->parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
@@ -59,8 +62,16 @@ it( 'updates the seeded table columns and populates successfully', function()
         ->expectsOutputToContain( "Population succeeded." )
         ->assertExitCode( 0 );
 
+    $second = Foo::all()->toArray();
+
+    expect( $first )->not()->toEqual( $second );
+
     $this->artisan( 'populate:rollback' )
         ->expectsOutputToContain( "The rollback command will only set back the latest copy of your database. You'll have to modify your migrations and models manually." )
         ->expectsOutputToContain( "Database copy successfully reloaded" )
         ->assertExitCode( 0 );
+
+    $third = Foo::all()->toArray();
+
+    expect( $first )->toEqual( $third );
 });
