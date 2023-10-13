@@ -13,11 +13,11 @@ use Exception;
 
 class Dumper
 {
-    private FileSystemAdapter $disk;
+    protected FileSystemAdapter $disk;
 
-    private string $path;
+    protected string $path;
 
-    private string $filename;
+    protected string $filename;
 
 
     public function __construct()
@@ -69,6 +69,20 @@ class Dumper
         if( $result->failed() ) throw new Exception( "An error occurred when dumping your database. Verify your credentials." );
     }
 
+    public function revert() : void
+    {
+        if( ! $this->disk->exists( $this->path ) ) throw new Exception( "No database copy left in directory." );
+
+        $connection = Config::get( 'database.connections.mysql' );
+
+        $files = Collection::make( $this->disk->allFiles( $this->path ) );
+
+        $command = "mysql --user={$connection[ 'username' ]} --password={$connection[ 'password' ]} --host={$connection[ 'host' ]} {$connection[ 'database' ]} < {$this->disk->path( $files->last() )}";
+
+        $result = Process::run( $command );
+
+        if( $result->failed() ) throw new Exception( "An error occurred when setting back your database. Verify your credentials." );
+    }
 
     public function remove() : void
     {

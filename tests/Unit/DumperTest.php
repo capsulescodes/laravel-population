@@ -9,6 +9,8 @@ use Illuminate\Support\Collection;
 
 beforeEach( function()
 {
+    $this->dumper = new Dumper();
+
     $this->disk = Storage::build( [ 'driver' => 'local', 'root' => storage_path() ] );
 
     $this->path = Config::get( 'population.path' );
@@ -66,13 +68,11 @@ it( "creates a dump directory with a given path", function()
 
 it( "makes a dump of the current database", function()
 {
-    $dumper = new Dumper();
-
     $date = Carbon::now();
 
     Carbon::setTestNow( $date );
 
-    $dumper->copy();
+    $this->dumper->copy();
 
     expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 });
@@ -80,19 +80,17 @@ it( "makes a dump of the current database", function()
 
 it( "makes multiple dumps of the current database", function()
 {
-    $dumper = new Dumper();
-
     $date = Carbon::now();
 
     Carbon::setTestNow( $date );
 
-    $dumper->copy();
+    $this->dumper->copy();
 
     expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 
     Carbon::setTestNow( $date->addMinute() );
 
-    $dumper->copy();
+    $this->dumper->copy();
 
     expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 });
@@ -100,23 +98,21 @@ it( "makes multiple dumps of the current database", function()
 
 it( "removes the latest dump of the current database", function()
 {
-    $dumper = new Dumper();
-
     $date = Carbon::now();
 
     Carbon::setTestNow( $date );
 
-    $dumper->copy();
+    $this->dumper->copy();
 
     expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 
     Carbon::setTestNow( $date->addMinute() );
 
-    $dumper->copy();
+    $this->dumper->copy();
 
     expect( Collection::make( $this->disk->files( $this->path ) ) )->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 
-    $dumper->remove();
+    $this->dumper->remove();
 
     expect( Collection::make( $this->disk->files( $this->path ) ) )->not()->toContain( "{$this->path}/{$this->database}-{$date->format( 'Y-m-d-H-i-s' )}.sql" );
 });
@@ -124,11 +120,16 @@ it( "removes the latest dump of the current database", function()
 
 it( "removes the existing directory if no database files", function()
 {
-    $dumper = new Dumper();
+    $this->dumper->copy();
 
-    $dumper->copy();
-
-    $dumper->remove();
+    $this->dumper->remove();
 
     expect( $this->disk->exists( $this->path ) )->not()->toBeTrue();
+});
+
+it( "rolls back the latest database dump", function()
+{
+    $this->dumper->copy();
+
+    expect( fn() => $this->dumper->revert() )->not()->toThrow( Exception::class );
 });

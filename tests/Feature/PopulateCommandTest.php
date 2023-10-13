@@ -1,29 +1,23 @@
 <?php
 
-use CapsulesCodes\Population\Tests\TestCase;
 use CapsulesCodes\Population\Tests\App\Database\Seeders\FooSeeder;
-use CapsulesCodes\Population\Tests\App\Models\Base\Foo as BaseFoo;
-use CapsulesCodes\Population\Tests\App\Models\New\Foo as NewFoo;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Artisan;
 
-uses( TestCase::class );
 
 beforeEach( function()
 {
-    // $this->loadMigrationsFrom( 'tests/app/database/migrations/base' );
+    $this->disk = Storage::build( [ 'driver' => 'local', 'root' => storage_path() ] );
 
-    // $this->seed( FooSeeder::class );
-
-    // $this->bases = BaseFoo::all();
+    $this->path = Config::get( 'population.path' );
 
     $this->parameters = [ '--realpath' => true, '--path' => 'tests/app/database/migrations/new' ];
 });
 
-// afterEach( function()
-// {
-//     $this->artisan( 'migrate:reset' );
-// });
+afterEach( function()
+{
+    $this->disk->deleteDirectory( $this->path );
+});
+
 
 
 

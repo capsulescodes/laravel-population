@@ -24,7 +24,11 @@ class PopulateCommand extends BaseCommand
                                 {--path=* : The path(s) to the migrations files to be executed}
                                 {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}";
 
-    protected $description = "Manage your database using prompts";
+    protected $description = "Update migration changes and convert current records";
+
+    protected Dumper $dumper;
+    protected Replicator $replicator;
+    protected Populator $populator;
 
     protected string $uuid;
 
@@ -165,7 +169,7 @@ class PopulateCommand extends BaseCommand
         }
     }
 
-    protected function write( $component, ...$arguments )
+    protected function write( $component, ...$arguments ) : void
     {
         ( new $component( $this->output ) )->render( ...$arguments );
     }
