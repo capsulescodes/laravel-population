@@ -129,7 +129,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
             {
                 if( $change[ 'new' ] )
                 {
-                    $input = text( "How would you like to convert the records for the column '{$column}' of type '{$change[ 'new' ]}'?", 'fn( $value, $model ) => $value' );
+                    $input = text( "How would you like to convert the records for the column '{$column}' of type '{$change[ 'new' ]}'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn( $attribute, $model ) => $attribute' );
 
                     preg_match( '/^\s*fn\s*\(\s*(\$[\w\d]*\s*(?:,\s*\$[\w\d]*)?)?\s*\)\s*=>\s*(.+)\s*/', $input, $matches );
 
