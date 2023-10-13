@@ -56,6 +56,8 @@ it( 'returns an error if the migration model does not exist', function()
     $this->loadMigrationsFrom( 'tests/app/database/migrations/base' );
 
     $this->artisan( 'populate', $this->parameters )
+        ->expectsOutputToContain( "Table 'foo' has changes" )
+        ->expectsOutputToContain( "⇂ delete column : 'baz' => type : boolean  \n  ⇂ update column : 'qux' => type : integer > string  \n  ⇂ create column : 'bar' => type : string" )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "App\\Models\\" )
         ->expectsOutputToContain( "The model file was not found." )
@@ -67,6 +69,8 @@ it( 'updates the empty table columns without converting', function()
     $this->loadMigrationsFrom( 'tests/app/database/migrations/base' );
 
     $this->artisan( 'populate', $this->parameters )
+        ->expectsOutputToContain( "Table 'foo' has changes" )
+        ->expectsOutputToContain( "⇂ delete column : 'baz' => type : boolean  \n  ⇂ update column : 'qux' => type : integer > string  \n  ⇂ create column : 'bar' => type : string" )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
         ->expectsOutputToContain( "The 'foo' table columns have been updated but it seems the table has no records. Skipping record conversion." )
@@ -80,6 +84,8 @@ it( 'updates the seeded table columns and recieves an incorrect conversion formu
     $this->seed( FooSeeder::class );
 
     $this->artisan( 'populate', $this->parameters )
+        ->expectsOutputToContain( "Table 'foo' has changes" )
+        ->expectsOutputToContain( "⇂ delete column : 'baz' => type : boolean  \n  ⇂ update column : 'qux' => type : integer > string  \n  ⇂ create column : 'bar' => type : string" )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
         ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?", "foo" )
@@ -94,6 +100,8 @@ it( 'updates the seeded table columns and populates successfully', function()
     $this->seed( FooSeeder::class );
 
     $this->artisan( 'populate', $this->parameters )
+        ->expectsOutputToContain( "Table 'foo' has changes" )
+        ->expectsOutputToContain( "⇂ delete column : 'baz' => type : boolean  \n  ⇂ update column : 'qux' => type : integer > string  \n  ⇂ create column : 'bar' => type : string" )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
         ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?", "fn() => fake()->sentence()" )
