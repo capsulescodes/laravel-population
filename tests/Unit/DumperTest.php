@@ -127,6 +127,7 @@ it( "removes the existing directory if no database files", function()
     expect( $this->disk->exists( $this->path ) )->not()->toBeTrue();
 });
 
+
 it( "rolls back the latest database dump", function()
 {
     $this->dumper->copy();

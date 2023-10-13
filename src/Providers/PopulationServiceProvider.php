@@ -4,7 +4,6 @@ namespace CapsulesCodes\Population\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use CapsulesCodes\Population\Replicator;
-use CapsulesCodes\Population\Purgator;
 use Illuminate\Foundation\Application;
 use CapsulesCodes\Population\Console\Commands\PopulateCommand;
 use CapsulesCodes\Population\Console\Commands\PopulateRollbackCommand;

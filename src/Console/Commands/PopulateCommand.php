@@ -3,23 +3,27 @@
 namespace CapsulesCodes\Population\Console\Commands;
 
 use Illuminate\Database\Console\Migrations\BaseCommand;
+use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Console\ConfirmableTrait;
 use CapsulesCodes\Population\Dumper;
 use CapsulesCodes\Population\Replicator;
 use CapsulesCodes\Population\Populator;
 use Illuminate\Support\Str;
+use Illuminate\Console\View\Components\Warn;
 use Illuminate\Console\View\Components\Error;
 use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\BulletList;
 use Illuminate\Support\Collection;
 use Exception;
 
-
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\text;
 
 
-class PopulateCommand extends BaseCommand
+class PopulateCommand extends BaseCommand implements Isolatable
 {
+    use ConfirmableTrait;
+
     protected $signature = "populate
                                 {--path=* : The path(s) to the migrations files to be executed}
                                 {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}";

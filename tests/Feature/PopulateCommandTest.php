@@ -35,12 +35,14 @@ it( 'returns an error if the database connection is incorrect', function()
     Config::set( 'database.connections.mysql.database', $this->database );
 });
 
+
 it( 'returns an error if the database has no migration', function()
 {
     $this->artisan( 'populate' )
         ->expectsOutputToContain( "No tables migrated yet, please run artisan migrate." )
         ->assertExitCode( 1 );
 });
+
 
 it( 'closes gracefully if confirmation has been refused', function()
 {
@@ -50,6 +52,7 @@ it( 'closes gracefully if confirmation has been refused', function()
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'No' )
         ->assertExitCode( 0 );
 });
+
 
 it( 'returns an error if the migration model does not exist', function()
 {
@@ -64,6 +67,7 @@ it( 'returns an error if the migration model does not exist', function()
         ->assertExitCode( 1 );
 });
 
+
 it( 'updates the empty table columns without converting', function()
 {
     $this->loadMigrationsFrom( 'tests/app/database/migrations/base' );
@@ -76,6 +80,7 @@ it( 'updates the empty table columns without converting', function()
         ->expectsOutputToContain( "The 'foo' table columns have been updated but it seems the table has no records. Skipping record conversion." )
         ->assertExitCode( 0 );
 });
+
 
 it( 'updates the seeded table columns and recieves an incorrect conversion formula', function()
 {
@@ -92,6 +97,7 @@ it( 'updates the seeded table columns and recieves an incorrect conversion formu
         ->expectsOutputToContain( "The function did not respect the required format." )
         ->assertExitCode( 1 );
 });
+
 
 it( 'updates the seeded table columns and populates successfully', function()
 {

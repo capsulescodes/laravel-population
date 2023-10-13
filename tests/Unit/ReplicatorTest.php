@@ -24,6 +24,14 @@ afterEach( function()
 
 
 
+it( "throws an error if a migration does not contain a '\$table' property", function()
+{
+    $this->replicator->path( 'tests/app/database/migrations/base/foo_table.php' );
+
+    expect( fn() => $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) ) )->toThrow( Exception::class );
+});
+
+
 it( 'can replicate existing migrations', function()
 {
     $base = Collection::make( Schema::getConnection()->getDoctrineSchemaManager()->listTableNames() );
@@ -37,6 +45,7 @@ it( 'can replicate existing migrations', function()
     expect( $new->toArray() )->toContain( "foo{$this->uuid}", ...$base->toArray() );
 });
 
+
 it( 'can determine no changes occurred in migrations', function()
 {
     $this->replicator->path( 'tests/app/database/migrations/new/qux_table' );
@@ -47,6 +56,7 @@ it( 'can determine no changes occurred in migrations', function()
 
     expect( $this->replicator->getDirties() )->toBeEmpty();
 });
+
 
 it( 'can list modified migrations table from database', function()
 {

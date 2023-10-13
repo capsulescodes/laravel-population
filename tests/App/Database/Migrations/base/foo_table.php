@@ -7,11 +7,9 @@ use Illuminate\Database\Schema\Blueprint;
 
 return new class extends Migration
 {
-    public $table = 'foo';
-
     public function up() : void
     {
-        Schema::create( $this->table, function( Blueprint $table )
+        Schema::create( 'foo', function( Blueprint $table )
         {
             $table->id();
             $table->string( 'foo' );
@@ -23,6 +21,6 @@ return new class extends Migration
 
     public function down() : void
     {
-        Schema::dropIfExists( $this->table );
+        Schema::dropIfExists( 'foo' );
     }
 };

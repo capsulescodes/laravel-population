@@ -3,6 +3,8 @@
 namespace CapsulesCodes\Population\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Console\ConfirmableTrait;
 use CapsulesCodes\Population\Dumper;
 use Illuminate\Console\View\Components\Warn;
 use Illuminate\Console\View\Components\Info;
@@ -10,8 +12,10 @@ use Illuminate\Console\View\Components\Error;
 use Exception;
 
 
-class PopulateRollbackCommand extends Command
+class PopulateRollbackCommand extends Command implements Isolatable
 {
+    use ConfirmableTrait;
+
     protected $signature = 'populate:rollback';
 
     protected $description = 'Migration changes rollback';
