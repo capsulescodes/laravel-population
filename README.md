@@ -13,7 +13,7 @@ Typically, your actual users table have a 'fullname' attribute, but you must hav
 
 <br>
 
-<span style="border-radius: 4px; color: #cc8800; background-color: #ffe97f; padding: 10px">This package serves as a proof of concept and is currently under active development. We recommend exercising caution when using it.</span>
+<font color="orange">:warning: This package serves as a proof of concept and is currently under active development. We recommend exercising caution when using it.</font>
 
 <br>
 
