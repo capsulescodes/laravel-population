@@ -21,7 +21,7 @@ Typically, your actual users table have a 'fullname' attribute, but you must hav
 ## Installation
 
 ```bash
-composer install capsulescodes/laravel-population
+composer require --dev capsulescodes/laravel-population
 ```
 
 <br>
@@ -103,11 +103,11 @@ use Illuminate\Database\Schema\Blueprint;
 
 return new class extends Migration
 {
-    public $table = 'foo';
+    public string $name = 'foo';
 
     public function up() : void
     {
-        Schema::create( $this->table, function( Blueprint $table )
+        Schema::create( $this->name, function( Blueprint $table )
         {
             $table->id();
             $table->boolean( 'foo' );
@@ -117,7 +117,7 @@ return new class extends Migration
 
     public function down() : void
     {
-        Schema::dropIfExists( $this->table );
+        Schema::dropIfExists( $this->name );
     }
 };
 ```

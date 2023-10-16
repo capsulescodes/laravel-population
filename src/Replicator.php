@@ -71,15 +71,15 @@ class Replicator extends Migrator
 
         $callback = function () use ( $connection, $uuid, $file, $migration, $method )
         {
-            if( ! property_exists( $migration, 'table' ) ) throw new Exception( "The '{$this->getMigrationName( $file )}' migration does not contain a '\$table' property." );
+            if( ! property_exists( $migration, 'name' ) ) throw new Exception( "The '{$this->getMigrationName( $file )}' migration does not contain a '\$name' property." );
 
             if( method_exists( $migration, $method ) )
             {
-                if( $method === 'up' ) $this->tables->put( $migration->table, $file );
+                if( $method === 'up' ) $this->tables->put( $migration->name, $file );
 
-                if( $method === 'down' ) $this->tables->pull( $migration->table );
+                if( $method === 'down' ) $this->tables->pull( $migration->name );
 
-                $migration->table = "{$migration->table}{$uuid}";
+                $migration->name = "{$migration->name}{$uuid}";
 
                 $this->runMethod( $connection, $migration, $method );
             }

@@ -9,7 +9,6 @@ use CapsulesCodes\Population\Dumper;
 use CapsulesCodes\Population\Replicator;
 use CapsulesCodes\Population\Populator;
 use Illuminate\Support\Str;
-use Illuminate\Console\View\Components\Warn;
 use Illuminate\Console\View\Components\Error;
 use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\BulletList;

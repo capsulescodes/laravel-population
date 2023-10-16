@@ -93,7 +93,7 @@ it( 'updates the seeded table columns and recieves an incorrect conversion formu
         ->expectsOutputToContain( "⇂ delete column : 'baz' => type : boolean  \n  ⇂ update column : 'qux' => type : integer > string  \n  ⇂ create column : 'bar' => type : string" )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?", "foo" )
+        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?  'fn( \$attribute, \$model ) => \$attribute'", "foo" )
         ->expectsOutputToContain( "The function did not respect the required format." )
         ->assertExitCode( 1 );
 });
@@ -110,8 +110,8 @@ it( 'updates the seeded table columns and populates successfully', function()
         ->expectsOutputToContain( "⇂ delete column : 'baz' => type : boolean  \n  ⇂ update column : 'qux' => type : integer > string  \n  ⇂ create column : 'bar' => type : string" )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?", "fn() => fake()->sentence()" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'string'?", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'string'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
         ->expectsOutputToContain( "Population succeeded." )
         ->assertExitCode( 0 );
 });

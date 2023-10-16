@@ -29,8 +29,8 @@ it( 'returns an error if the database connection is incorrect', function()
     $this->artisan( 'populate', $this->parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?", "fn() => fake()->sentence()" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'string'?", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'string'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
         ->expectsOutputToContain( "Population succeeded." )
         ->assertExitCode( 0 );
 
@@ -57,8 +57,8 @@ it( 'rolls back the latest database dump', function()
     $this->artisan( 'populate', $this->parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
         ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?", "fn() => fake()->sentence()" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'string'?", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'string'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'string'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
         ->expectsOutputToContain( "Population succeeded." )
         ->assertExitCode( 0 );
 

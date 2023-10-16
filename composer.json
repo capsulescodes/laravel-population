@@ -1,9 +1,10 @@
 {
     "name" : "capsulescodes/laravel-population",
-    "description" : "Laravel command to manage your database in real time",
+    "description" : "Simplify database migrations and ensure consistency with your database tables effortlessly.",
     "type" : "library",
     "license" : "MIT",
     "keywords" : [ "laravel" ],
+    "minimum-stability": "dev",
     "authors" : [ { "name": "mho22", "email": "yannick@capsules.codes" } ],
     "autoload" : { "psr-4" : { "CapsulesCodes\\Population\\" : "src/" } },
     "autoload-dev" : { "psr-4" : { "CapsulesCodes\\Population\\Tests\\" : "tests/" } },

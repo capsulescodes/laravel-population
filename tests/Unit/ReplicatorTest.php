@@ -24,7 +24,7 @@ afterEach( function()
 
 
 
-it( "throws an error if a migration does not contain a '\$table' property", function()
+it( "throws an error if a migration does not contain a '\$name' property", function()
 {
     $this->replicator->path( 'tests/app/database/migrations/base/foo_table.php' );
 
