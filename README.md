@@ -2,6 +2,7 @@
 
 # Laravel Population
 
+
 Simplify database migrations and ensure consistency with your database tables effortlessly.
 
 Laravel Population package provides a set of commands that scan your migrations and detect any disparities between them and your database tables. If differences are found, a wizard is triggered to help you migrate and seed the new tables with converted records.
@@ -9,6 +10,10 @@ Laravel Population package provides a set of commands that scan your migrations 
 <br>
 
 Typically, your actual users table have a 'fullname' attribute, but you must have two separated attributes 'firstname' and 'lastname'.
+
+<br>
+
+<span style="border-radius: 4px; color: #cc8800; background-color: #ffe97f; padding: 10px">This package serves as a proof of concept and is currently under active development. We recommend exercising caution when using it.</span>
 
 <br>
 
