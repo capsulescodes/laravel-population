@@ -24,14 +24,6 @@ afterEach( function()
 
 
 
-it( "throws an error if a migration does not contain a '\$name' property", function()
-{
-    $this->replicator->path( 'tests/app/database/migrations/base/foo_table.php' );
-
-    expect( fn() => $this->replicator->replicate( $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) ) )->toThrow( Exception::class );
-});
-
-
 it( 'can replicate existing migrations', function()
 {
     $base = Collection::make( Schema::getConnection()->getDoctrineSchemaManager()->listTableNames() );

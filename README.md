@@ -1,7 +1,8 @@
 
+<p align="center"><img src="capsules-laravel-population-image.png" width="300px" height="200px" /></p>
 
-# Laravel Population
 
+<br>
 
 Simplify database migrations and ensure consistency with your database tables effortlessly.
 

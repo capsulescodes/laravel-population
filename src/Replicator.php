@@ -71,9 +71,7 @@ class Replicator extends Migrator
 
         $callback = function () use ( $connection, $uuid, $file, $migration, $method )
         {
-            if( ! property_exists( $migration, 'name' ) ) throw new Exception( "The '{$this->getMigrationName( $file )}' migration does not contain a '\$name' property." );
-
-            if( method_exists( $migration, $method ) )
+            if( property_exists( $migration, 'name' ) && method_exists( $migration, $method ) )
             {
                 if( $method === 'up' ) $this->tables->put( $migration->name, $file );
 
