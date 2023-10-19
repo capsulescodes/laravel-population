@@ -1,5 +1,5 @@
 
-<p align="center"><img src="capsules-laravel-population-image.png" width="300px" height="200px" /></p>
+<p align="center"><img src="capsules-laravel-population-image.png" width="400px" height="265px" /></p>
 
 
 <br>
