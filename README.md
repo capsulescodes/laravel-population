@@ -1,8 +1,5 @@
 
-<p align="center"><img src="capsules-laravel-population-image.png" width="400px" height="265px" /></p>
-
-
-<br>
+<p align="center"><img src="capsules-laravel-population-image.png" width="400px" height="265px" alt="Laravel Population" /></p>
 
 Simplify database migrations and ensure consistency with your database tables effortlessly.
 
