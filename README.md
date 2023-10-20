@@ -26,11 +26,16 @@ composer require --dev capsulescodes/laravel-population
 
 ## Usage
 
+> [!NOTE]
+> Only migrations having a [`$name`](#property) property will be inspected
+
 <br>
 
 ```bash
 php artisan populate
 ```
+
+<br>
 
 The populate command will display the changes made in the migration files and ask for confirmation.
 
@@ -89,7 +94,7 @@ php artisan populate:rollback
 <br>
 <br>
 
-The package requires the migrations to contain a `$table` property.
+The package requires the migrations to contain a <a name="property">`$table`</a> property.
 
 ```php
 <?php
