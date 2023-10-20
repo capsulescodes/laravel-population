@@ -29,8 +29,6 @@ composer require --dev capsulescodes/laravel-population
 > [!NOTE]
 > Only migrations having a [`$name`](#property) property will be inspected
 
-<br>
-
 ```bash
 php artisan populate
 ```
