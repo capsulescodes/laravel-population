@@ -11,7 +11,7 @@ Typically, your actual users table have a 'fullname' attribute, but you must hav
 
 <br>
 
- [this article](https://capsules.codes/en/blog/fyi/en-fyi-modify-tables-and-records-with-laravel-population) provides an in-depth exploration of the package.
+ [This article](https://capsules.codes/en/blog/fyi/en-fyi-modify-tables-and-records-with-laravel-population) provides an in-depth exploration of the package.
 
 <br>
 
