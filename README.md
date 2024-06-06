@@ -16,7 +16,7 @@ Typically, your actual users table have a 'fullname' attribute, but you must hav
 <br>
 
 > [!WARNING]
-> This package serves as a proof of concept and is currently under active development. We recommend exercising caution when using it.
+> This package is currently under active development. We recommend exercising caution when using it.
 
 <br>
 

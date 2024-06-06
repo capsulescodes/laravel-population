@@ -1,0 +1,8 @@
+*
+!.gitignore
+!/Factories
+!/Factories/*
+!/Migrations
+!/Migrations/*
+!/Seeders
+!/Seeders/*

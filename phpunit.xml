@@ -15,8 +15,4 @@
         </include>
     </source>
     <coverage />
-    <php>
-        <env name="DB_DATABASE" value="package" />
-        <env name="DB_USERNAME" value="root" />
-    </php>
 </phpunit>

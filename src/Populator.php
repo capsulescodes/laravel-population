@@ -17,7 +17,7 @@ class Populator
         return $this->dirty;
     }
 
-    public function process( string $table, string $uuid, Collection $formulas, Collection $records ) : void
+    public function process( string $table, string $database, string $uuid, Collection $formulas, Collection $records ) : void
     {
         $transforms = Collection::make();
 
@@ -47,7 +47,7 @@ class Populator
         {
             $new = $record->replicate();
 
-            $new->setTable( "{$table}{$uuid}" );
+            $new->setTable( "{$table}-{$uuid}" );
 
             foreach( $transforms as $column => $transform )
             {
@@ -57,9 +57,9 @@ class Populator
             $new->save();
         }
 
-        Schema::dropIfExists( $table );
+        Schema::connection( $database )->dropIfExists( $table );
 
-        Schema::rename( "{$table}{$uuid}", $table );
+        Schema::connection( $database )->rename( "{$table}-{$uuid}", $table );
 
         $this->dirty = true;
     }

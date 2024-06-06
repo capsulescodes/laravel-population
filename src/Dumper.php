@@ -5,6 +5,8 @@ namespace CapsulesCodes\Population;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Config;
+use CapsulesCodes\Population\Enums\Driver;
+use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Collection;
@@ -24,9 +26,9 @@ class Dumper
     {
         $this->disk = Storage::build( [ 'driver' => 'local', 'root' => storage_path() ] );
 
-        $this->path = Config::get( 'population.path' );
+        $this->path = Config::get( 'population.path', Storage::path( '/' ) );
 
-        $this->filename = "";
+        $this->filename = '';
     }
 
     protected function makeDirectory() : void
@@ -39,49 +41,78 @@ class Dumper
         }
     }
 
-    protected function databaseExists() : bool
+    public function copy( string $name ) : void
     {
-        $connection = Config::get( 'database.connections.mysql' );
-
-        $command = "mysql --user={$connection[ 'username' ]} --password={$connection[ 'password' ]} --host={$connection[ 'host' ]} {$connection[ 'database' ]}";
-
-        $result = Process::run( $command );
-
-        return $result->successful();
-    }
-
-    public function copy() : void
-    {
-        if( ! $this->databaseExists() ) throw new Exception( "An error occurred when dumping your database. Verify your credentials." );
-
         $this->makeDirectory();
-
-        $connection = Config::get( 'database.connections.mysql' );
 
         $date = Carbon::now()->format( 'Y-m-d-H-i-s' );
 
-        $this->filename = "{$connection[ 'database' ]}-{$date}.sql";
+        $connection = Config::get( "database.connections.{$name}" );
 
-        $command = "mysqldump --user={$connection[ 'username' ]} --password={$connection[ 'password' ]} --host={$connection[ 'host' ]} --order-by-primary {$connection[ 'database' ]} > {$this->disk->path( $this->path )}/{$this->filename}";
+        $driver = Driver::from( $connection[ 'driver' ] );
 
-        $result = Process::run( $command );
+        if( $driver == Driver::SQLite )
+        {
+            $chunk = Str::of( $connection[ 'database' ] )->basename()->explode( '.' )->first();
 
-        if( $result->failed() ) throw new Exception( "An error occurred when dumping your database. Verify your credentials." );
+            $this->filename = Str::of( $chunk )->append( "-{$date}.sqlite" );
+
+            $command = "cp {$connection[ 'database' ]} {$this->disk->path( $this->path )}/{$this->filename}";
+
+            $result = Process::run( $command );
+
+            if( $result->failed() ) throw new Exception( "An error occurred while dumping your database. Verify your credentials." );
+        }
+        else if( $driver == Driver::MySQL || $driver == Driver::MariaDB )
+        {
+            $this->filename = "{$connection[ 'database' ]}-{$date}.sql";
+
+            $command = "mysqldump --user={$connection[ 'username' ]} --password={$connection[ 'password' ]} --host={$connection[ 'host' ]} --order-by-primary {$connection[ 'database' ]} > {$this->disk->path( $this->path )}/{$this->filename}";
+
+            $result = Process::run( $command );
+
+            if( $result->failed() ) throw new Exception( "An error occurred while dumping your database. Verify your credentials." );
+        }
+        else
+        {
+           throw new Exception( "An error occurred while dumping your database. Connection driver not supported." );
+        }
     }
 
-    public function revert() : void
+    public function revert( string $name ) : void
     {
-        if( ! $this->disk->exists( $this->path ) ) throw new Exception( "No database copy left in directory." );
+        $files = Collection::make( $this->disk->exists( $this->path ) ? $this->disk->allFiles( $this->path ) : [] );
 
-        $connection = Config::get( 'database.connections.mysql' );
+        $connection = Config::get( "database.connections.{$name}" );
 
-        $files = Collection::make( $this->disk->allFiles( $this->path ) );
+        $driver = Driver::from( $connection[ 'driver' ] );
 
-        $command = "mysql --user={$connection[ 'username' ]} --password={$connection[ 'password' ]} --host={$connection[ 'host' ]} {$connection[ 'database' ]} < {$this->disk->path( $files->last() )}";
+        $chunk = Str::of( $connection[ 'database' ] )->basename()->explode( '.' )->first();
 
-        $result = Process::run( $command );
+        $dumps = $files->filter( fn( $file ) => Str::of( $file )->contains( $chunk ) );
 
-        if( $result->failed() ) throw new Exception( "An error occurred when setting back your database. Verify your credentials." );
+        if( $dumps->isEmpty() ) throw new Exception( "No database dump left in directory." );
+
+        if( $driver == Driver::SQLite )
+        {
+            $command = "mv {$this->disk->path( $dumps->last() )} {$connection[ 'database' ]}";
+
+            $result = Process::run( $command );
+
+            if( $result->failed() ) throw new Exception( "An error occurred while setting back your database. Verify your credentials." );
+        }
+        else if( $driver == Driver::MySQL || $driver == Driver::MariaDB )
+        {
+            $command = "mysql --user={$connection[ 'username' ]} --password={$connection[ 'password' ]} --host={$connection[ 'host' ]} {$connection[ 'database' ]} < {$this->disk->path( $dumps->last() )}";
+
+            $result = Process::run( $command );
+
+            if( $result->failed() ) throw new Exception( "An error occurred while setting back your database. Verify your credentials." );
+        }
+        else
+        {
+            throw new Exception( "An error occurred while dumping your database. Connection driver not supported." );
+        }
     }
 
     public function remove() : void

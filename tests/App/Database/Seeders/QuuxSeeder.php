@@ -3,13 +3,13 @@
 namespace CapsulesCodes\Population\Tests\App\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use CapsulesCodes\Population\Tests\App\Models\Base\Foo;
+use CapsulesCodes\Population\Tests\App\Models\Base\Quux;
 
 
-class FooSeeder extends Seeder
+class QuuxSeeder extends Seeder
 {
     public function run() : void
     {
-        Foo::factory()->count( 1 )->create();
+        Quux::factory()->count( 1 )->create();
     }
 }

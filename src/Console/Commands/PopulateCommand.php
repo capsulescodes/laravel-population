@@ -9,10 +9,12 @@ use CapsulesCodes\Population\Dumper;
 use CapsulesCodes\Population\Replicator;
 use CapsulesCodes\Population\Populator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Console\View\Components\Error;
 use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\BulletList;
-use Illuminate\Support\Collection;
+use Symfony\Component\Console\Input\InputOption;
 use Exception;
 
 use function Laravel\Prompts\confirm;
@@ -23,10 +25,8 @@ class PopulateCommand extends BaseCommand implements Isolatable
 {
     use ConfirmableTrait;
 
-    protected $signature = "populate
-                                {--path=* : The path(s) to the migrations files to be executed}
-                                {--realpath : Indicate any provided migration file paths are pre-resolved absolute paths}";
 
+    protected $name = 'populate';
     protected $description = "Update migration changes and convert current records";
 
     protected Dumper $dumper;
@@ -34,6 +34,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
     protected Populator $populator;
 
     protected string $uuid;
+    protected int $status;
 
 
     public function __construct( Dumper $dumper, Replicator $replicator, Populator $populator )
@@ -50,33 +51,46 @@ class PopulateCommand extends BaseCommand implements Isolatable
     {
         $this->uuid = Str::orderedUuid()->getHex()->serialize();
 
+        $this->status = 0;
+
         $this->registerShutdownHandler();
 
-        return $this->migrator->usingConnection( null, function()
+        $databases = Collection::make( empty( $this->input->getOption( 'database' ) ) ? [ Config::get( 'database.default' ) ] : $this->input->getOption( 'database' ) ) ;
+
+        $databases->each( function( $database ) use ( $databases )
         {
-            $this->migrator->setOutput( $this->output );
+            if( $this->status ) return;
 
-            try
+            if( $databases->count() > 1 ) $this->write( Info::class, "Populating database : {$database}..." );
+
+            $this->migrator->usingConnection( $database, function() use ( $database )
             {
-                $this->dumper->copy();
+                $this->migrator->setOutput( $this->output );
 
-                $this->migrator->replicate( $this->uuid, $this->migrator->getMigrationFiles( $this->getMigrationPaths() ) );
+                try
+                {
+                    $this->migrator->databaseExists( $database );
 
-                $this->migrator->inspect( $this->uuid );
+                    $this->dumper->copy( $database );
 
-                $this->populate();
+                    $this->migrator->replicate( $database, $this->uuid, $this->migrator->getMigrationFiles( $this->getMigrationPaths() ) );
 
-                return 0;
-            }
-            catch( Exception $exception )
-            {
-                $this->write( Error::class, $exception->getMessage() );
+                    $this->migrator->inspect( $database, $this->uuid );
 
-                $this->revert();
+                    $this->populate( $database );
+                }
+                catch( Exception $exception )
+                {
+                    $this->write( Error::class, $exception->getMessage() );
 
-                return 1;
-            }
-        });
+                    $this->revert();
+
+                    $this->status = 1;
+                }
+            } );
+        } );
+
+        return $this->status;
     }
 
     protected function registerShutdownHandler() : void
@@ -84,7 +98,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
         register_shutdown_function( function(){ $this->revert(); } );
     }
 
-    protected function populate() : void
+    protected function populate( $database ) : void
     {
         foreach( $this->migrator->getDirties() as $table => $changes )
         {
@@ -101,7 +115,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
 
             if( $confirmed )
             {
-                $this->request( $table, $changes );
+                $this->request( $database, $table, $changes );
             }
             else
             {
@@ -112,7 +126,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
         if( $this->populator->isDirty() ) $this->write( Info::class, 'Population succeeded.' );
     }
 
-    protected function request( $table, $changes ) : void
+    protected function request( $database, $table, $changes ) : void
     {
         $formulas = Collection::make();
 
@@ -143,7 +157,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
             }
         }
 
-        $this->populator->process( $table, $this->uuid, $formulas, $records );
+        $this->populator->process( $table, $database, $this->uuid, $formulas, $records );
     }
 
     protected function load( $table = null, $input = null ) : Collection
@@ -175,5 +189,15 @@ class PopulateCommand extends BaseCommand implements Isolatable
     protected function write( $component, ...$arguments ) : void
     {
         ( new $component( $this->output ) )->render( ...$arguments );
+    }
+
+
+    protected function getOptions() : array
+    {
+        return [
+            [ 'database', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'The database connection(s) to be inspected' ],
+            [ 'path', null, InputOption::VALUE_OPTIONAL | InputOption::VALUE_IS_ARRAY, 'The path(s) to the migrations files to be executed' ],
+            [ 'realpath', null, InputOption::VALUE_NONE, 'Indicate any provided migration file paths are pre-resolved absolute paths' ]
+        ];
     }
 }
