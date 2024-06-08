@@ -1,0 +1,16 @@
+name : Publish to Packagist
+on :
+  release :
+    types : [ published ]
+jobs :
+  publish :
+    runs-on : ubuntu-latest
+    steps :
+      - uses : actions/checkout@v2
+      - uses : shivammathur/setup-php@v2
+        with :
+          php-version : '8.2'
+          tools : composer:v2
+      - run : composer install
+      - run : ./vendor/bin/pest
+      - run : composer publish

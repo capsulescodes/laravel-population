@@ -10,7 +10,7 @@ use Pest\TestSuite;
 
 trait Configurable
 {
-    private static int $count;
+    private static int $count = 0;
     private static Collection $tests;
 
 
