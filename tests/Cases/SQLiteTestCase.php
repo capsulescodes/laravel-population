@@ -15,16 +15,20 @@ abstract class SQLiteTestCase extends BaseTestCase
 
     protected function initialize() : void
     {
-        Process::run( "touch ./tests/app/database/laravel-population-sqlite-one.sqlite" );
+        $path = base_path();
 
-        Process::run( "touch ./tests/app/database/laravel-population-sqlite-two.sqlite" );
+        Process::run( "touch {$path}/database/laravel-population-sqlite-one.sqlite" );
+
+        Process::run( "touch {$path}/database/laravel-population-sqlite-two.sqlite" );
     }
 
     protected function finalize() : void
     {
-        Process::run( "rm ./tests/app/database/laravel-population-sqlite-one.sqlite" );
+        $path = base_path();
 
-        Process::run( "rm ./tests/app/database/laravel-population-sqlite-two.sqlite" );
+        Process::run( "rm {$path}/database/laravel-population-sqlite-one.sqlite" );
+
+        Process::run( "rm {$path}/database/laravel-population-sqlite-two.sqlite" );
     }
 
     protected function getEnvironmentSetUp( $app ) : void
@@ -34,7 +38,7 @@ abstract class SQLiteTestCase extends BaseTestCase
         $app[ 'config' ]->set( 'database.connections.one', [
 
             'driver' => 'sqlite',
-            'database' => 'tests/app/database/laravel-population-sqlite-one.sqlite',
+            'database' => base_path( '/database/laravel-population-sqlite-one.sqlite' ),
             'prefix' => '',
             'foreign_key_constraints' => true,
 
@@ -43,7 +47,7 @@ abstract class SQLiteTestCase extends BaseTestCase
         $app[ 'config' ]->set( 'database.connections.two', [
 
             'driver' => 'sqlite',
-            'database' => 'tests/app/database/laravel-population-sqlite-two.sqlite',
+            'database' => base_path( '/database/laravel-population-sqlite-two.sqlite' ),
             'prefix' => '',
             'foreign_key_constraints' => true,
 
