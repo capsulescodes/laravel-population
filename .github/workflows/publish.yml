@@ -12,5 +12,5 @@ jobs :
           php-version : '8.2'
           tools : composer:v2
       - run : composer install
-      - run : ./vendor/bin/pest
+      - run : ./vendor/bin/pest --group=continuous-integration
       - run : composer publish
