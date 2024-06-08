@@ -20,13 +20,13 @@ beforeEach( function() : void
 
     $this->replicator = new Replicator( App::make( 'migrator' ), App::make( Parser::class ) );
 
-    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
+    $this->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
 
     $this->bases = BaseFoo::all();
 
-    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new/foo_table.php' ) );
+    $this->replicator->path( 'tests/App/Database/Migrations/databases/one/new/foo_table.php' );
 
     $this->replicator->replicate( Config::get( 'database.default' ), $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 

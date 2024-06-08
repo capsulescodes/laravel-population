@@ -11,7 +11,7 @@ beforeEach( function() : void
 
     $this->path = Config::get( 'population.path' );
 
-    $this->parameters = [ '--realpath' => true, '--path' => realpath( 'tests/app/database/migrations/databases/one/new' ) ];
+    $this->parameters = [ '--realpath' => true, '--path' => 'tests/App/Database/Migrations/databases/one/new' ];
 } );
 
 afterEach( function() : void
@@ -48,7 +48,7 @@ it( 'closes gracefully if confirmation has been refused', function() : void
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
+    $this->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/one/base' );
 
     $this->artisan( 'populate', $this->parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'No' )
@@ -60,7 +60,7 @@ it( 'returns an error if the migration model does not exist', function() : void
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
+    $this->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/one/base' );
 
     $this->artisan( 'populate', $this->parameters )
         ->expectsOutputToContain( "Table 'foo' has changes" )
@@ -75,7 +75,7 @@ it( 'updates the empty table columns without converting', function() : void
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
+    $this->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/one/base' );
 
     $this->artisan( 'populate', $this->parameters )
         ->expectsOutputToContain( "Table 'foo' has changes" )
@@ -90,7 +90,7 @@ it( 'updates the seeded table columns and recieves an incorrect conversion formu
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
+    $this->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
 
@@ -108,7 +108,7 @@ it( 'updates the seeded table columns and populates successfully', function() : 
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
+    $this->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
 
@@ -127,11 +127,11 @@ it( 'updates the seeded table columns and populates successfully on two database
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/many/base' ) );
+    $this->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/many/base' );
 
     $this->seed( [ FooSeeder::class, QuuxSeeder::class ] );
 
-    $parameters = [ '--realpath' => true, '--path' => realpath( 'tests/app/database/migrations/databases/many/new' ), '--database' => [ 'one', 'two' ] ];
+    $parameters = [ '--realpath' => true, '--path' => 'tests/App/Database/Migrations/databases/many/new', '--database' => [ 'one', 'two' ] ];
 
     $this->artisan( 'populate', $parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
