@@ -12,5 +12,7 @@ jobs :
           php-version : '8.2'
           tools : composer:v2
       - run : composer install
+      - run : touch ./tests/app/database/laravel-population-sqlite-one.sqlite
+      - run : touch ./tests/app/database/laravel-population-sqlite-two.sqlite
       - run : ./vendor/bin/pest --group=continuous-integration
       - run : composer publish

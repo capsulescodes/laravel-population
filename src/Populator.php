@@ -49,7 +49,7 @@ class Populator
 
             $new->setTable( "{$table}-{$uuid}" );
 
-            foreach ( $transforms as $column => $transform ) eval( $transform );
+            foreach( $transforms as $column => $transform ) eval( $transform );
 
             $new->save();
         }

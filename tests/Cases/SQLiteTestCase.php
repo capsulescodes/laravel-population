@@ -15,16 +15,16 @@ abstract class SQLiteTestCase extends BaseTestCase
 
     protected function initialize() : void
     {
-        Process::run( 'touch tests/app/database/laravel-population-sqlite-one.sqlite' );
+        Process::run( "touch ./tests/app/database/laravel-population-sqlite-one.sqlite" );
 
-        Process::run( 'touch tests/app/database/laravel-population-sqlite-two.sqlite' );
+        Process::run( "touch ./tests/app/database/laravel-population-sqlite-two.sqlite" );
     }
 
     protected function finalize() : void
     {
-        Process::run( 'rm tests/app/database/laravel-population-sqlite-one.sqlite' );
+        Process::run( "rm ./tests/app/database/laravel-population-sqlite-one.sqlite" );
 
-        Process::run( 'rm tests/app/database/laravel-population-sqlite-two.sqlite' );
+        Process::run( "rm ./tests/app/database/laravel-population-sqlite-two.sqlite" );
     }
 
     protected function getEnvironmentSetUp( $app ) : void

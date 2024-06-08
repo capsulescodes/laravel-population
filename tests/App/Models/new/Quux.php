@@ -12,6 +12,8 @@ class Quux extends Model
 
 
     protected $connection = 'two';
+
     protected $table = 'quux';
+
     protected $fillable = [ 'quux', 'grault', 'waldo' ];
 }

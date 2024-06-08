@@ -15,8 +15,6 @@ beforeEach( function() : void
 afterEach( function() : void
 {
     $this->disk->deleteDirectory( Config::get( 'population.path' ) );
-
-    $this->artisan( 'migrate:fresh' );
 } );
 
 
@@ -24,6 +22,8 @@ afterEach( function() : void
 
 it( 'returns an error if no dump left in directory', function() : void
 {
+    $this->artisan( 'migrate:fresh' );
+
     $this->artisan( 'populate:rollback' )
         ->expectsOutputToContain( 'No database dump left in directory.' )
         ->assertExitCode( 1 );
@@ -32,6 +32,8 @@ it( 'returns an error if no dump left in directory', function() : void
 
 it( 'returns an error if the database connection is incorrect', function() : void
 {
+    $this->artisan( 'migrate:fresh' );
+
     $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
@@ -51,13 +53,13 @@ it( 'returns an error if the database connection is incorrect', function() : voi
     $this->artisan( 'populate:rollback', $parameters )
         ->expectsOutputToContain( 'No database dump left in directory.' )
         ->assertExitCode( 1 );
-
-    $this->artisan( 'migrate:fresh' );
 } );
 
 
 it( 'rolls back the latest database dump', function() : void
 {
+    $this->artisan( 'migrate:fresh' );
+
     $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
@@ -86,13 +88,15 @@ it( 'rolls back the latest database dump', function() : void
     $third = Foo::all()->toArray();
 
     expect( $first )->toEqual( $third );
-
-    $this->artisan( 'migrate:fresh' );
 } );
 
 
 it( 'rolls back the latest database dumps on two databases', function() : void
 {
+    $this->artisan( 'db:wipe', [ '--database' => 'two' ] );
+
+    $this->artisan( 'migrate:fresh' );
+
     $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/many/base' );
 
     $this->seed( [ FooSeeder::class, QuuxSeeder::class ] );
@@ -131,8 +135,4 @@ it( 'rolls back the latest database dumps on two databases', function() : void
 
     expect( $thirdFoos )->toEqual( $firstFoos );
     expect( $thirdQuuxes )->toEqual( $firstQuuxes );
-
-    $this->artisan( 'db:wipe', [ '--database' => 'two' ] );
-
-    $this->artisan( 'migrate:fresh', [ '--database' => 'two' ] );
 } );
