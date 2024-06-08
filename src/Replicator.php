@@ -46,8 +46,6 @@ class Replicator extends Migrator
 
         $this->dirties->splice( 0 );
 
-        $this->requireFiles( $files );
-
         foreach( $files as $file )
         {
             $tables = $this->parser->getTables( $file );

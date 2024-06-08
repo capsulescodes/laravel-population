@@ -34,11 +34,11 @@ it( 'returns an error if the database connection is incorrect', function() : voi
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( './tests/app/database/migrations/databases/one/base' );
+    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
 
     $this->seed( FooSeeder::class );
 
-    $parameters = [ '--realpath' => true, '--path' => './tests/app/database/migrations/databases/one/new', '--database' => 'one' ];
+    $parameters = [ '--realpath' => true, '--path' => realpath( 'tests/app/database/migrations/databases/one/new' ), '--database' => 'one' ];
 
     $this->artisan( 'populate', $parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
@@ -60,13 +60,13 @@ it( 'rolls back the latest database dump', function() : void
 {
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( './tests/app/database/migrations/databases/one/base' );
+    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
 
     $this->seed( FooSeeder::class );
 
     $first = Foo::all()->toArray();
 
-    $parameters = [ '--realpath' => true, '--path' => './tests/app/database/migrations/databases/one/new' ];
+    $parameters = [ '--realpath' => true, '--path' => realpath( 'tests/app/database/migrations/databases/one/new' ) ];
 
     $this->artisan( 'populate', $parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
@@ -97,14 +97,14 @@ it( 'rolls back the latest database dumps on two databases', function() : void
 
     $this->artisan( 'migrate:fresh' );
 
-    $this->loadMigrationsFrom( './tests/app/database/migrations/databases/many/base' );
+    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/many/base' ) );
 
     $this->seed( [ FooSeeder::class, QuuxSeeder::class ] );
 
     $firstFoos = Foo::all()->toArray();
     $firstQuuxes = Quux::all()->toArray();
 
-    $parameters = [ '--realpath' => true, '--path' => './tests/app/database/migrations/databases/many/new', '--database' => [ 'one', 'two' ] ];
+    $parameters = [ '--realpath' => true, '--path' => realpath( 'tests/app/database/migrations/databases/many/new' ), '--database' => [ 'one', 'two' ] ];
 
     $this->artisan( 'populate', $parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )

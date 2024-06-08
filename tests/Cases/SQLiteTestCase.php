@@ -33,6 +33,8 @@ abstract class SQLiteTestCase extends BaseTestCase
 
     protected function getEnvironmentSetUp( $app ) : void
     {
+        dump( realpath( '' ), getcwd() );
+
         $app[ 'config' ]->set( 'database.default', 'one' );
 
         $app[ 'config' ]->set( 'database.connections.one', [

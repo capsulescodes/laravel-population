@@ -17,7 +17,7 @@ beforeEach( function() : void
 
     $this->replicator = new Replicator( App::make( 'migrator' ), App::make( Parser::class ) );
 
-    $this->loadMigrationsFrom( './tests/app/database/migrations/databases/one/base' );
+    $this->loadMigrationsFrom( realpath( 'tests/app/database/migrations/databases/one/base' ) );
 } );
 
 afterEach( function() : void
@@ -40,7 +40,7 @@ it( 'can replicate existing migrations', function() : void
 {
     $base = Arr::pluck( Schema::getTables(), 'name' );
 
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new/foo_table.php' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new/foo_table.php' ) );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -52,7 +52,7 @@ it( 'can replicate existing migrations', function() : void
 
 it( 'can determine no changes occurred in migrations', function() : void
 {
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new/qux_table' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new/qux_table' ) );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -64,7 +64,7 @@ it( 'can determine no changes occurred in migrations', function() : void
 
 it( 'can list modified migrations table from database', function() : void
 {
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new' ) );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -76,7 +76,7 @@ it( 'can list modified migrations table from database', function() : void
 
 it( 'can determine if foo column has no changes', function() : void
 {
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new' ) );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -88,7 +88,7 @@ it( 'can determine if foo column has no changes', function() : void
 
 it( 'can determine if bar column has been added', function() : void
 {
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new' ) );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -104,7 +104,7 @@ it( 'can determine if bar column has been added', function() : void
 
 it( 'can determine if baz column has been removed', function() : void
 {
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new' ) );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -120,7 +120,7 @@ it( 'can determine if baz column has been removed', function() : void
 
 it( 'can determine if qux column type has been modified', function() : void
 {
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/databases/one/new' ) );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -134,7 +134,7 @@ it( 'can determine if qux column type has been modified', function() : void
 
 it( 'can not replicate migration without table names', function() : void
 {
-    $this->replicator->path( './tests/app/database/migrations/databases/one/new/thud_table.php' );
+    $this->replicator->path( realpath( 'tests/app/database/migrations/parser/foo_table.php' ) );
 
     $files = $this->replicator->getMigrationFiles( $this->replicator->paths() );
 
