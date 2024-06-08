@@ -2,14 +2,15 @@
 
 namespace CapsulesCodes\Population\Tests\Cases;
 
-use Orchestra\Testbench\TestCase as BaseTestCase;
-use CapsulesCodes\Population\Tests\App\Traits\Configurable;
 use CapsulesCodes\Population\Providers\PopulationServiceProvider;
+use CapsulesCodes\Population\Tests\App\Traits\Configurable;
+use Orchestra\Testbench\TestCase as BaseTestCase;
 
 
 abstract class TestCase extends BaseTestCase
 {
     use Configurable;
+
 
     protected function getPackageProviders( $app ) : array
     {

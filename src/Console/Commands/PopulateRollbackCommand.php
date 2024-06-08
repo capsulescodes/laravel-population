@@ -2,18 +2,18 @@
 
 namespace CapsulesCodes\Population\Console\Commands;
 
-use Illuminate\Console\Command;
-use Illuminate\Contracts\Console\Isolatable;
-use Illuminate\Console\ConfirmableTrait;
 use CapsulesCodes\Population\Dumper;
 use CapsulesCodes\Population\Replicator;
+use Exception;
+use Illuminate\Console\Command;
+use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Console\View\Components\Error;
+use Illuminate\Console\View\Components\Info;
+use Illuminate\Console\View\Components\Warn;
+use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Console\View\Components\Warn;
-use Illuminate\Console\View\Components\Info;
-use Illuminate\Console\View\Components\Error;
 use Symfony\Component\Console\Input\InputOption;
-use Exception;
 
 
 class PopulateRollbackCommand extends Command implements Isolatable
@@ -26,7 +26,6 @@ class PopulateRollbackCommand extends Command implements Isolatable
 
     protected Dumper $dumper;
     protected Replicator $replicator;
-
     protected int $status;
 
 
@@ -44,15 +43,15 @@ class PopulateRollbackCommand extends Command implements Isolatable
 
         $this->status = 0;
 
-        $databases = Collection::make( empty( $this->input->getOption( 'database' ) ) ? [ Config::get( 'database.default' ) ] : $this->input->getOption( 'database' ) ) ;
+        $databases = Collection::make( empty( $this->input->getOption( 'database' ) ) ? [ Config::get( 'database.default' ) ] : $this->input->getOption( 'database' ) );
 
-        $databases->each( function( $database ) use ( $databases )
+        $databases->each( function( $database ) use ( $databases ) : void
         {
             if( $this->status ) return;
 
             if( $databases->count() > 1 ) $this->write( Info::class, "Rolling back {$database} database..." );
 
-            $this->migrator->usingConnection( $database, function() use ( $database )
+            $this->migrator->usingConnection( $database, function() use ( $database ) : void
             {
                 $this->migrator->setOutput( $this->output );
 
@@ -64,7 +63,7 @@ class PopulateRollbackCommand extends Command implements Isolatable
 
                     $this->migrator->resolveConnection( $database )->reconnect();
 
-                    $this->write( Info::class, "Database dump successfully reloaded" );
+                    $this->write( Info::class, 'Database dump successfully reloaded' );
                 }
                 catch( Exception $exception )
                 {
@@ -82,7 +81,6 @@ class PopulateRollbackCommand extends Command implements Isolatable
     {
         ( new $component( $this->output ) )->render( ...$arguments );
     }
-
 
     protected function getOptions() : array
     {

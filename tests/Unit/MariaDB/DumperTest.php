@@ -1,14 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Config;
 use CapsulesCodes\Population\Dumper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 
-beforeEach( function()
+beforeEach( function() : void
 {
     $this->database = Config::get( 'database.default' );
 
@@ -21,7 +21,7 @@ beforeEach( function()
     $this->path = Config::get( 'population.path' );
 } );
 
-afterEach( function()
+afterEach( function() : void
 {
     $this->disk->deleteDirectory( $this->path );
 } );
@@ -29,7 +29,7 @@ afterEach( function()
 
 
 
-it( "creates a dump directory", function()
+it( 'creates a dump directory', function() : void
 {
     $dumper = new Dumper();
 
@@ -39,9 +39,9 @@ it( "creates a dump directory", function()
 } );
 
 
-it( "creates a dump directory with a given path", function()
+it( 'creates a dump directory with a given path', function() : void
 {
-    $path = "app/databases";
+    $path = 'app/databases';
 
     Config::set( 'population.path', $path );
 
@@ -57,7 +57,7 @@ it( "creates a dump directory with a given path", function()
 } );
 
 
-it( "makes a dump of the current database", function()
+it( 'makes a dump of the current database', function() : void
 {
     $date = Carbon::now();
 
@@ -69,7 +69,7 @@ it( "makes a dump of the current database", function()
 } );
 
 
-it( "makes multiple dumps of the current database", function()
+it( 'makes multiple dumps of the current database', function() : void
 {
     $date = Carbon::now();
 
@@ -87,7 +87,7 @@ it( "makes multiple dumps of the current database", function()
 } );
 
 
-it( "removes the latest dump of the current database", function()
+it( 'removes the latest dump of the current database', function() : void
 {
     $date = Carbon::now();
 
@@ -109,7 +109,7 @@ it( "removes the latest dump of the current database", function()
 } );
 
 
-it( "removes the existing directory if no database files", function()
+it( 'removes the existing directory if no database files', function() : void
 {
     $this->dumper->copy( $this->database );
 
@@ -119,7 +119,7 @@ it( "removes the existing directory if no database files", function()
 } );
 
 
-it( "rolls back the latest database dump", function()
+it( 'rolls back the latest database dump', function() : void
 {
     $this->dumper->copy( $this->database );
 

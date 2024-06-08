@@ -1,18 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Config;
 use CapsulesCodes\Population\Tests\App\Database\Seeders\FooSeeder;
 use CapsulesCodes\Population\Tests\App\Database\Seeders\QuuxSeeder;
 use CapsulesCodes\Population\Tests\App\Models\Base\Foo;
 use CapsulesCodes\Population\Tests\App\Models\Base\Quux;
+use Illuminate\Support\Facades\Config;
 
 
-beforeEach( function()
+beforeEach( function() : void
 {
     $this->disk = Storage::build( [ 'driver' => 'local', 'root' => storage_path() ] );
 } );
 
-afterEach( function()
+afterEach( function() : void
 {
     $this->disk->deleteDirectory( Config::get( 'population.path' ) );
 
@@ -22,56 +22,56 @@ afterEach( function()
 
 
 
-it( 'returns an error if no dump left in directory', function()
+it( 'returns an error if no dump left in directory', function() : void
 {
     $this->artisan( 'populate:rollback' )
-        ->expectsOutputToContain( "No database dump left in directory." )
+        ->expectsOutputToContain( 'No database dump left in directory.' )
         ->assertExitCode( 1 );
 } );
 
 
-it( 'returns an error if the database connection is incorrect', function()
+it( 'returns an error if the database connection is incorrect', function() : void
 {
-    $this->loadMigrationsFrom( 'tests/app/database/migrations/one-database/base' );
+    $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
 
-    $parameters = [ '--realpath' => true, '--path' => 'tests/app/database/migrations/one-database/new', '--database' => 'one' ];
+    $parameters = [ '--realpath' => true, '--path' => 'tests/app/database/migrations/databases/one/new', '--database' => 'one' ];
 
     $this->artisan( 'populate', $parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
-        ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
-        ->expectsOutputToContain( "Population succeeded." )
+        ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", 'CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
+        ->expectsOutputToContain( 'Population succeeded.' )
         ->assertExitCode( 0 );
 
     $parameters = [ '--database' => 'two' ];
 
     $this->artisan( 'populate:rollback', $parameters )
-        ->expectsOutputToContain( "No database dump left in directory." )
+        ->expectsOutputToContain( 'No database dump left in directory.' )
         ->assertExitCode( 1 );
 
     $this->artisan( 'migrate:fresh' );
 } );
 
 
-it( 'rolls back the latest database dump', function()
+it( 'rolls back the latest database dump', function() : void
 {
-    $this->loadMigrationsFrom( 'tests/app/database/migrations/one-database/base' );
+    $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
 
     $first = Foo::all()->toArray();
 
-    $parameters = [ '--realpath' => true, '--path' => 'tests/app/database/migrations/one-database/new' ];
+    $parameters = [ '--realpath' => true, '--path' => 'tests/app/database/migrations/databases/one/new' ];
 
     $this->artisan( 'populate', $parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
-        ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
-        ->expectsOutputToContain( "Population succeeded." )
+        ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", 'CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
+        ->expectsOutputToContain( 'Population succeeded.' )
         ->assertExitCode( 0 );
 
     $second = Foo::all()->toArray();
@@ -80,7 +80,7 @@ it( 'rolls back the latest database dump', function()
 
     $this->artisan( 'populate:rollback' )
         ->expectsOutputToContain( "The rollback command will only set back the latest copy of your database(s). You'll have to modify your migrations and models manually." )
-        ->expectsOutputToContain( "Database dump successfully reloaded" )
+        ->expectsOutputToContain( 'Database dump successfully reloaded' )
         ->assertExitCode( 0 );
 
     $third = Foo::all()->toArray();
@@ -91,26 +91,26 @@ it( 'rolls back the latest database dump', function()
 } );
 
 
-it( 'rolls back the latest database dumps on two databases', function()
+it( 'rolls back the latest database dumps on two databases', function() : void
 {
-    $this->loadMigrationsFrom( 'tests/app/database/migrations/two-databases/base' );
+    $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/many/base' );
 
     $this->seed( [ FooSeeder::class, QuuxSeeder::class ] );
 
     $firstFoos = Foo::all()->toArray();
     $firstQuuxes = Quux::all()->toArray();
 
-    $parameters = [ '--realpath' => true, '--path' => 'tests/app/database/migrations/two-databases/new', '--database' => [ 'one', 'two' ] ];
+    $parameters = [ '--realpath' => true, '--path' => 'tests/app/database/migrations/databases/many/new', '--database' => [ 'one', 'two' ] ];
 
     $this->artisan( 'populate', $parameters )
         ->expectsConfirmation( "Do you want to proceed on populating the 'foo' table?", 'Yes' )
-        ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "The 'App\Models\Foo' model path does not exist, please provide the correct path.", 'CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Foo' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'qux' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'bar' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
         ->expectsConfirmation( "Do you want to proceed on populating the 'quux' table?", 'Yes' )
-        ->expectsQuestion( "The 'App\Models\Quux' model path does not exist, please provide the correct path.", "CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Quux" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'waldo' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
-        ->expectsQuestion( "How would you like to convert the records for the column 'grault' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", "fn() => fake()->sentence()" )
+        ->expectsQuestion( "The 'App\Models\Quux' model path does not exist, please provide the correct path.", 'CapsulesCodes\\Population\\Tests\\App\\Models\\New\\Quux' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'waldo' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
+        ->expectsQuestion( "How would you like to convert the records for the column 'grault' of type 'varchar'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn() => fake()->sentence()' )
         ->assertExitCode( 0 );
 
     $secondFoos = Foo::all()->toArray();
@@ -119,12 +119,11 @@ it( 'rolls back the latest database dumps on two databases', function()
     expect( $secondFoos )->not()->toEqual( $firstFoos );
     expect( $secondQuuxes )->not()->toEqual( $firstQuuxes );
 
-
     $parameters = [ '--database' => [ 'one', 'two' ] ];
 
     $this->artisan( 'populate:rollback', $parameters )
         ->expectsOutputToContain( "The rollback command will only set back the latest copy of your database(s). You'll have to modify your migrations and models manually." )
-        ->expectsOutputToContain( "Database dump successfully reloaded" )
+        ->expectsOutputToContain( 'Database dump successfully reloaded' )
         ->assertExitCode( 0 );
 
     $thirdFoos = Foo::all()->toArray();
@@ -132,7 +131,6 @@ it( 'rolls back the latest database dumps on two databases', function()
 
     expect( $thirdFoos )->toEqual( $firstFoos );
     expect( $thirdQuuxes )->toEqual( $firstQuuxes );
-
 
     $this->artisan( 'db:wipe', [ '--database' => 'two' ] );
 

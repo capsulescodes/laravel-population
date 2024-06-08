@@ -1,25 +1,26 @@
 <?php
 
-use Illuminate\Support\Str;
+use CapsulesCodes\Population\Parser;
 use CapsulesCodes\Population\Replicator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 
-beforeEach( function()
+beforeEach( function() : void
 {
     $this->database = Config::get( 'database.default' );
 
     $this->uuid = Str::orderedUuid()->getHex()->serialize();
 
-    $this->replicator = new Replicator( App::make( 'migrator' ) );
+    $this->replicator = new Replicator( App::make( 'migrator' ), App::make( Parser::class ) );
 
-    $this->loadMigrationsFrom( 'tests/app/database/migrations/one-database/base' );
+    $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/one/base' );
 } );
 
-afterEach( function()
+afterEach( function() : void
 {
     $this->replicator->clean( $this->uuid );
 
@@ -29,11 +30,17 @@ afterEach( function()
 
 
 
-it( 'can replicate existing migrations', function()
+it( "returns en exception if current database doesn't exist", function() : void
+{
+    expect( fn() => $this->replicator->databaseExists( 'foo' ) )->toThrow( Exception::class );
+} );
+
+
+it( 'can replicate existing migrations', function() : void
 {
     $base = Arr::pluck( Schema::getTables(), 'name' );
 
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new/foo_table.php' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new/foo_table.php' );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -43,9 +50,9 @@ it( 'can replicate existing migrations', function()
 } );
 
 
-it( 'can determine no changes occurred in migrations', function()
+it( 'can determine no changes occurred in migrations', function() : void
 {
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new/qux_table' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new/qux_table' );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -55,9 +62,9 @@ it( 'can determine no changes occurred in migrations', function()
 } );
 
 
-it( 'can list modified migrations table from database', function()
+it( 'can list modified migrations table from database', function() : void
 {
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new' );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -67,9 +74,9 @@ it( 'can list modified migrations table from database', function()
 } );
 
 
-it( 'can determine if foo column has no changes', function()
+it( 'can determine if foo column has no changes', function() : void
 {
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new' );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -79,9 +86,9 @@ it( 'can determine if foo column has no changes', function()
 } );
 
 
-it( 'can determine if bar column has been added', function()
+it( 'can determine if bar column has been added', function() : void
 {
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new' );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -95,9 +102,9 @@ it( 'can determine if bar column has been added', function()
 } );
 
 
-it( 'can determine if baz column has been removed', function()
+it( 'can determine if baz column has been removed', function() : void
 {
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new' );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -111,9 +118,9 @@ it( 'can determine if baz column has been removed', function()
 } );
 
 
-it( 'can determine if qux column type has been modified', function()
+it( 'can determine if qux column type has been modified', function() : void
 {
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new' );
 
     $this->replicator->replicate( $this->database, $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -124,7 +131,12 @@ it( 'can determine if qux column type has been modified', function()
     expect( $this->replicator->getDirties()->get( 'foo' )[ 'qux' ] )->toHaveKeys( [ 'old', 'new' ] );
 } );
 
-it( "returns en exception if current database doesn't exist", function()
+
+it( 'can not replicate migration without table names', function() : void
 {
-    expect( fn() => $this->replicator->databaseExists( 'foo' ) )->toThrow( Exception::class );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new/thud_table.php' );
+
+    $files = $this->replicator->getMigrationFiles( $this->replicator->paths() );
+
+    expect( fn() => $this->replicator->replicate( $this->database, $this->uuid, $files ) )->toThrow( Exception::class );
 } );

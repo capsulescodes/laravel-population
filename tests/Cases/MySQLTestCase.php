@@ -2,10 +2,11 @@
 
 namespace CapsulesCodes\Population\Tests\Cases;
 
-use Orchestra\Testbench\TestCase as BaseTestCase;
 use CapsulesCodes\Population\Providers\PopulationServiceProvider;
 use CapsulesCodes\Population\Tests\App\Traits\Configurable;
 use Illuminate\Support\Facades\Process;
+use Orchestra\Testbench\TestCase as BaseTestCase;
+
 
 abstract class MySQLTestCase extends BaseTestCase
 {
@@ -45,7 +46,7 @@ abstract class MySQLTestCase extends BaseTestCase
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => []
+            'options' => [],
 
         ] );
 
@@ -64,7 +65,7 @@ abstract class MySQLTestCase extends BaseTestCase
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => []
+            'options' => [],
 
         ] );
     }

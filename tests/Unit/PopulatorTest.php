@@ -1,30 +1,32 @@
 <?php
 
-use CapsulesCodes\Population\Tests\App\Database\Seeders\FooSeeder;
-use Illuminate\Support\Str;
-use CapsulesCodes\Population\Replicator;
+use CapsulesCodes\Population\Parser;
 use CapsulesCodes\Population\Populator;
+use CapsulesCodes\Population\Replicator;
+use CapsulesCodes\Population\Tests\App\Database\Seeders\FooSeeder;
 use CapsulesCodes\Population\Tests\App\Models\Base\Foo as BaseFoo;
 use CapsulesCodes\Population\Tests\App\Models\New\Foo as NewFoo;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 
-beforeEach( function()
+beforeEach( function() : void
 {
     $this->database = Config::get( 'database.default' );
 
     $this->uuid = Str::orderedUuid()->getHex()->serialize();
 
-    $this->replicator = new Replicator( App::make( 'migrator' ) );
+    $this->replicator = new Replicator( App::make( 'migrator' ), App::make( Parser::class ) );
 
-
-    $this->loadMigrationsFrom( 'tests/app/database/migrations/one-database/base' );
+    $this->loadMigrationsFrom( 'tests/app/database/migrations/databases/one/base' );
 
     $this->seed( FooSeeder::class );
 
     $this->bases = BaseFoo::all();
 
-    $this->replicator->path( 'tests/app/database/migrations/one-database/new/foo_table.php' );
+    $this->replicator->path( 'tests/app/database/migrations/databases/one/new/foo_table.php' );
 
     $this->replicator->replicate( Config::get( 'database.default' ), $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
@@ -32,13 +34,13 @@ beforeEach( function()
 
     $this->records = NewFoo::all();
 
-    $this->formulas = Collection::make( [ "baz" => null, "bar" => [ "", "", "\"\"" ], "qux" => [ "", "", "\"\"" ] ] );
+    $this->formulas = Collection::make( [ 'baz' => null, 'bar' => [ '', '', '""' ], 'qux' => [ '', '', '""' ] ] );
 } );
 
 
 
 
-it( 'is dirty after a population occurred', function()
+it( 'is dirty after a population occurred', function() : void
 {
     $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
 
@@ -46,37 +48,37 @@ it( 'is dirty after a population occurred', function()
 } );
 
 
-it( 'can delete a column', function()
+it( 'can delete a column', function() : void
 {
-    $this->bases->each( function( $base ) { expect( $base->getAttribute( 'baz' ) )->not()->toBeNull(); } );
+    $this->bases->each( function( $base ) : void {  expect( $base->getAttribute( 'baz' ) )->not()->toBeNull(); } );
 
     $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
 
     $records = NewFoo::all();
 
-    $records->each( function( $new ) { expect( $new->getAttribute( 'baz' ) )->toBeNull(); } );
+    $records->each( function( $new ) : void { expect( $new->getAttribute( 'baz' ) )->toBeNull(); } );
 } );
 
 
-it( 'can populate a new column', function()
+it( 'can populate a new column', function() : void
 {
-    $this->bases->each( function( $base ) { expect( $base->getAttribute( 'bar' ) )->toBeNull(); } );
+    $this->bases->each( function( $base ) : void { expect( $base->getAttribute( 'bar' ) )->toBeNull(); } );
 
     $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
 
     $records = NewFoo::all();
 
-    $records->each( function( $new ) { expect( $new->getAttribute( 'bar' ) )->not()->toBeNull(); } );
+    $records->each( function( $new ) : void { expect( $new->getAttribute( 'bar' ) )->not()->toBeNull(); } );
 } );
 
 
-it( 'can populate a modified column', function()
+it( 'can populate a modified column', function() : void
 {
-    $this->bases->each( function( $base ) { expect( $base->getAttribute( 'qux' ) )->toBeInt(); } );
+    $this->bases->each( function( $base ) : void { expect( $base->getAttribute( 'qux' ) )->toBeInt(); } );
 
     $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
 
     $records = NewFoo::all();
 
-    $records->each( function( $new ) { expect( $new->getAttribute( 'qux' ) )->toBeString(); } );
+    $records->each( function( $new ) : void { expect( $new->getAttribute( 'qux' ) )->toBeString(); } );
 } );

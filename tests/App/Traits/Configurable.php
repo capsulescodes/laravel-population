@@ -2,15 +2,15 @@
 
 namespace CapsulesCodes\Population\Tests\App\Traits;
 
-use Illuminate\Support\Collection;
-use Pest\TestSuite;
-use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Pest\TestSuite;
 
 
 trait Configurable
 {
-    private static int $count = 0;
+    private static int $count;
     private static Collection $tests;
 
 
@@ -26,6 +26,16 @@ trait Configurable
         }
 
         self::$count++;
+    }
+
+    protected function tearDown() : void
+    {
+        parent::tearDown();
+
+        if( count( self::$tests ) == self::$count )
+        {
+            if( method_exists( self::class, 'finalize' ) ) $this->finalize();
+        }
     }
 
     private function init() : void
@@ -48,15 +58,5 @@ trait Configurable
         $only = $cases->filter( fn( $case ) => Collection::make( $case->groups )->contains( '__pest_only' ) );
 
         self::$tests = ( $only->isEmpty() ? $cases : $only )->keys()->map( fn( $key ) => Str::of( $key )->kebab );
-    }
-
-    protected function tearDown() : void
-    {
-        parent::tearDown();
-
-        if( count( self::$tests ) == self::$count )
-        {
-            if( method_exists( self::class, 'finalize' ) ) $this->finalize();
-        }
     }
 }

@@ -2,10 +2,11 @@
 
 namespace CapsulesCodes\Population\Tests\Cases;
 
-use Orchestra\Testbench\TestCase as BaseTestCase;
 use CapsulesCodes\Population\Providers\PopulationServiceProvider;
 use CapsulesCodes\Population\Tests\App\Traits\Configurable;
 use Illuminate\Support\Facades\Process;
+use Orchestra\Testbench\TestCase as BaseTestCase;
+
 
 abstract class SQLiteTestCase extends BaseTestCase
 {
@@ -14,16 +15,16 @@ abstract class SQLiteTestCase extends BaseTestCase
 
     protected function initialize() : void
     {
-        Process::run( "touch tests/app/database/laravel-population-sqlite-one.sqlite" );
+        Process::run( 'touch tests/app/database/laravel-population-sqlite-one.sqlite' );
 
-        Process::run( "touch tests/app/database/laravel-population-sqlite-two.sqlite" );
+        Process::run( 'touch tests/app/database/laravel-population-sqlite-two.sqlite' );
     }
 
     protected function finalize() : void
     {
-        Process::run( "rm tests/app/database/laravel-population-sqlite-one.sqlite" );
+        Process::run( 'rm tests/app/database/laravel-population-sqlite-one.sqlite' );
 
-        Process::run( "rm tests/app/database/laravel-population-sqlite-two.sqlite" );
+        Process::run( 'rm tests/app/database/laravel-population-sqlite-two.sqlite' );
     }
 
     protected function getEnvironmentSetUp( $app ) : void
@@ -35,7 +36,7 @@ abstract class SQLiteTestCase extends BaseTestCase
             'driver' => 'sqlite',
             'database' => 'tests/app/database/laravel-population-sqlite-one.sqlite',
             'prefix' => '',
-            'foreign_key_constraints' => true
+            'foreign_key_constraints' => true,
 
         ] );
 
@@ -44,7 +45,7 @@ abstract class SQLiteTestCase extends BaseTestCase
             'driver' => 'sqlite',
             'database' => 'tests/app/database/laravel-population-sqlite-two.sqlite',
             'prefix' => '',
-            'foreign_key_constraints' => true
+            'foreign_key_constraints' => true,
 
         ] );
     }

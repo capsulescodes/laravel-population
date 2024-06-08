@@ -2,13 +2,14 @@
 
 namespace CapsulesCodes\Population\Tests\App\Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use CapsulesCodes\Population\Tests\App\Models\Base\Foo;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 
 class FooFactory extends Factory
 {
     protected $model = Foo::class;
+
 
     public function definition() : array
     {

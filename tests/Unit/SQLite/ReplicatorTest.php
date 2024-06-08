@@ -1,21 +1,22 @@
 <?php
 
-use Illuminate\Support\Str;
+use CapsulesCodes\Population\Parser;
 use CapsulesCodes\Population\Replicator;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 
-beforeEach( function()
+beforeEach( function() : void
 {
     $this->uuid = Str::orderedUuid()->getHex()->serialize();
 
-    $this->replicator = new Replicator( App::make( 'migrator' ) );
+    $this->replicator = new Replicator( App::make( 'migrator' ), App::make( Parser::class ) );
 } );
 
-afterEach( function()
+afterEach( function() : void
 {
     $this->replicator->clean( $this->uuid );
 } );
@@ -23,7 +24,7 @@ afterEach( function()
 
 
 
-it( 'can replicate existing migrations on a specific SQLite database', function()
+it( 'can replicate existing migrations on a specific SQLite database', function() : void
 {
     [ $base, $new ] = replicateMigrationsOnSQLiteDatabase( 'two' );
 
@@ -31,7 +32,7 @@ it( 'can replicate existing migrations on a specific SQLite database', function(
 } );
 
 
-it( 'can replicate existing migrations on multiple specific SQLite databases', function()
+it( 'can replicate existing migrations on multiple specific SQLite databases', function() : void
 {
     [ $base, $new ] = replicateMigrationsOnSQLiteDatabase( 'one' );
 
@@ -40,7 +41,6 @@ it( 'can replicate existing migrations on multiple specific SQLite databases', f
     [ $base, $new ] = replicateMigrationsOnSQLiteDatabase( 'two' );
 
     expect( $new )->toContain( "foo-{$this->uuid}", ...$base );
-
 } );
 
 
@@ -48,11 +48,11 @@ function replicateMigrationsOnSQLiteDatabase( string $database ) : array
 {
     Config::set( 'database.default', $database );
 
-    test()->loadMigrationsFrom( 'tests/app/database/migrations/one-database/base' );
+    test()->loadMigrationsFrom( 'tests/app/database/migrations/databases/one/base' );
 
     $base = Arr::pluck( Schema::getTables(), 'name' );
 
-    test()->replicator->path( 'tests/app/database/migrations/one-database/new/foo_table.php' );
+    test()->replicator->path( 'tests/app/database/migrations/databases/one/new/foo_table.php' );
 
     test()->replicator->replicate( $database, test()->uuid, test()->replicator->getMigrationFiles( test()->replicator->paths() ) );
 

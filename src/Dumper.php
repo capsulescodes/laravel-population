@@ -2,23 +2,21 @@
 
 namespace CapsulesCodes\Population;
 
-use Illuminate\Filesystem\FilesystemAdapter;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Config;
 use CapsulesCodes\Population\Enums\Driver;
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Collection;
 use Exception;
+use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 
 class Dumper
 {
     protected FileSystemAdapter $disk;
-
     protected string $path;
-
     protected string $filename;
 
 
@@ -61,9 +59,9 @@ class Dumper
 
             $result = Process::run( $command );
 
-            if( $result->failed() ) throw new Exception( "An error occurred while dumping your database. Verify your credentials." );
+            if( $result->failed() ) throw new Exception( 'An error occurred while dumping your database. Please verify your credentials.' );
         }
-        else if( $driver == Driver::MySQL || $driver == Driver::MariaDB )
+        elseif( $driver == Driver::MySQL || $driver == Driver::MariaDB )
         {
             $this->filename = "{$connection[ 'database' ]}-{$date}.sql";
 
@@ -71,11 +69,11 @@ class Dumper
 
             $result = Process::run( $command );
 
-            if( $result->failed() ) throw new Exception( "An error occurred while dumping your database. Verify your credentials." );
+            if( $result->failed() ) throw new Exception( 'An error occurred while dumping your database. Please verify your credentials.' );
         }
         else
         {
-           throw new Exception( "An error occurred while dumping your database. Connection driver not supported." );
+            throw new Exception( 'An error occurred while dumping your database. Connection driver not supported.' );
         }
     }
 
@@ -91,7 +89,7 @@ class Dumper
 
         $dumps = $files->filter( fn( $file ) => Str::of( $file )->contains( $chunk ) );
 
-        if( $dumps->isEmpty() ) throw new Exception( "No database dump left in directory." );
+        if( $dumps->isEmpty() ) throw new Exception( 'No database dump left in directory.' );
 
         if( $driver == Driver::SQLite )
         {
@@ -99,26 +97,32 @@ class Dumper
 
             $result = Process::run( $command );
 
-            if( $result->failed() ) throw new Exception( "An error occurred while setting back your database. Verify your credentials." );
+            if( $result->failed() ) throw new Exception( 'An error occurred while setting back your database. Please verify your credentials.' );
         }
-        else if( $driver == Driver::MySQL || $driver == Driver::MariaDB )
+        elseif( $driver == Driver::MySQL || $driver == Driver::MariaDB )
         {
             $command = "mysql --user={$connection[ 'username' ]} --password={$connection[ 'password' ]} --host={$connection[ 'host' ]} {$connection[ 'database' ]} < {$this->disk->path( $dumps->last() )}";
 
             $result = Process::run( $command );
 
-            if( $result->failed() ) throw new Exception( "An error occurred while setting back your database. Verify your credentials." );
+            if( $result->failed() ) throw new Exception( 'An error occurred while setting back your database. Please verify your credentials.' );
         }
         else
         {
-            throw new Exception( "An error occurred while dumping your database. Connection driver not supported." );
+            throw new Exception( 'An error occurred while dumping your database. Connection driver not supported.' );
         }
     }
 
     public function remove() : void
     {
-        if( $this->disk->exists( "{$this->path}/{$this->filename}" ) ) $this->disk->delete( "{$this->path}/{$this->filename}" );
+        if( $this->disk->exists( "{$this->path}/{$this->filename}" ) )
+        {
+            $this->disk->delete( "{$this->path}/{$this->filename}" );
+        }
 
-        if( Collection::make( $this->disk->files( $this->path ) )->count() == 1 && $this->disk->exists( "{$this->path}/.gitignore" ) ) $this->disk->deleteDirectory( $this->path );
+        if( Collection::make( $this->disk->files( $this->path ) )->count() == 1 && $this->disk->exists( "{$this->path}/.gitignore" ) )
+        {
+            $this->disk->deleteDirectory( $this->path );
+        }
     }
 }

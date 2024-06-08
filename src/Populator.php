@@ -2,8 +2,8 @@
 
 namespace CapsulesCodes\Population;
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 
@@ -25,7 +25,7 @@ class Populator
         {
             if( $formula )
             {
-                $variables = explode( ',', Str::of( $formula[ 1 ] )->finish('') );
+                $variables = explode( ',', Str::of( $formula[ 1 ] )->finish( '' ) );
 
                 $transform = Str::of( $formula[ 2 ] )->rtrim( ';' );
 
@@ -49,10 +49,7 @@ class Populator
 
             $new->setTable( "{$table}-{$uuid}" );
 
-            foreach( $transforms as $column => $transform )
-            {
-                eval( $transform );
-            }
+            foreach ( $transforms as $column => $transform ) eval( $transform );
 
             $new->save();
         }
