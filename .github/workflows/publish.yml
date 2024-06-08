@@ -1,4 +1,4 @@
-name : Publish to Packagist
+name : Publish Package to Composer
 on :
   release :
     types : [ published ]
@@ -13,4 +13,3 @@ jobs :
           tools : composer:v2
       - run : composer install
       - run : ./vendor/bin/pest --group=continuous-integration
-      - run : composer publish
