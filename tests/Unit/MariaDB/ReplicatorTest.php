@@ -48,11 +48,11 @@ function replicateMigrationsOnMariaDBDatabase( string $database ) : array
 {
     Config::set( 'database.default', $database );
 
-    test()->loadMigrationsFrom( 'tests/App/Database/Migrations/databases/one/base' );
+    test()->loadMigrationsFrom( 'tests/App/Database/Migrations/Databases/one/base' );
 
     $base = Arr::pluck( Schema::getTables(), 'name' );
 
-    test()->replicator->path( 'tests/App/Database/Migrations/databases/one/new/foo_table.php' );
+    test()->replicator->path( 'tests/App/Database/Migrations/Databases/one/new/foo_table.php' );
 
     test()->replicator->replicate( $database, test()->uuid, test()->replicator->getMigrationFiles( test()->replicator->paths() ) );
 

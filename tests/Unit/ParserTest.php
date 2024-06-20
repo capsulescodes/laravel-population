@@ -19,7 +19,7 @@ beforeEach( function() : void
 
 it( 'can find one string table name in migration file', function() : void
 {
-    $data = $this->parser->getTables( 'tests/App/Database/Migrations/parser/bar_table.php' );
+    $data = $this->parser->getTables( 'tests/App/Database/Migrations/Parser/bar_table.php' );
 
     expect( $data->toArray() )->toBe( [ 'bar' ] );
 } );
@@ -27,7 +27,7 @@ it( 'can find one string table name in migration file', function() : void
 
 it( 'can find multiple string table names in migration file', function() : void
 {
-    $data = $this->parser->getTables( 'tests/App/Database/Migrations/parser/baz_table.php' );
+    $data = $this->parser->getTables( 'tests/App/Database/Migrations/Parser/baz_table.php' );
 
     expect( $data->toArray() )->toBe( [ 'baz', 'qux' ] );
 } );
@@ -35,7 +35,7 @@ it( 'can find multiple string table names in migration file', function() : void
 
 it( 'can not find string table name in migration file', function() : void
 {
-    $data = $this->parser->getTables( 'tests/App/Database/Migrations/parser/foo_table.php' );
+    $data = $this->parser->getTables( 'tests/App/Database/Migrations/Parser/FooTable.php' );
 
     expect( $data->toArray() )->toBeEmpty();
 } );
@@ -43,7 +43,7 @@ it( 'can not find string table name in migration file', function() : void
 
 it( 'can overwrite anonymous class migrations', function() : void
 {
-    $migration = $this->parser->getMigration( 'tests/App/Database/Migrations/parser/baz_table.php', $this->uuid );
+    $migration = $this->parser->getMigration( 'tests/App/Database/Migrations/Parser/baz_table.php', $this->uuid );
 
     $class = new ReflectionClass( get_class( $migration ) );
 
@@ -54,10 +54,10 @@ it( 'can overwrite anonymous class migrations', function() : void
 
 it( 'can overwrite named class migrations', function() : void
 {
-    $migration = $this->parser->getMigration( 'tests/App/Database/Migrations/parser/foo_table.php', $this->uuid );
+    $migration = $this->parser->getMigration( 'tests/App/Database/Migrations/Parser/FooTable.php', $this->uuid );
 
     $class = new ReflectionClass( get_class( $migration ) );
 
     expect( $class->isSubclassOf( Migration::class ) )->toBeTrue();
-    expect( Str::of( $class->name )->explode( '\\' )->last() )->toBe( 'ThudTable' );
+    expect( Str::of( $class->name )->explode( '\\' )->last() )->toBe( 'FooTable' );
 } );

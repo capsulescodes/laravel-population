@@ -1,13 +1,13 @@
 <?php
 
-namespace CapsulesCodes\Population\Tests\App\Database\Migrations;
+namespace CapsulesCodes\Population\Tests\App\Database\Migrations\Parser;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 
-class ThudTable extends Migration
+class FooTable extends Migration
 {
     public $name = 'foo';
 
