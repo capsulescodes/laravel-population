@@ -4,10 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Dump path
+    | Database dumps path
     |--------------------------------------------------------------------------
     |
-    | The path of your database dumps directory.
+    | The path where the database dumps directory is located.
     |
     */
 

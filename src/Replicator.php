@@ -2,20 +2,21 @@
 
 namespace CapsulesCodes\Population;
 
-use Exception;
-use Illuminate\Console\View\Components\Info;
-use Illuminate\Console\View\Components\Task;
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Migrations\Migrator;
+use CapsulesCodes\Population\Parser;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Console\View\Components\Info;
+use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Str;
+use Illuminate\Console\View\Components\Task;
+use Illuminate\Support\Facades\Schema;
+use Exception;
 
 
 class Replicator extends Migrator
 {
     protected Parser $parser;
-    protected Collection $tables;
+    protected Collection $schemas;
     protected Collection $dirties;
 
 
@@ -24,13 +25,13 @@ class Replicator extends Migrator
         parent::__construct( $migrator->repository, $migrator->resolver, $migrator->files, $migrator->events );
 
         $this->parser = $parser;
-        $this->tables = Collection::make();
+        $this->schemas = Collection::make();
         $this->dirties = Collection::make();
     }
 
-    public function getTables() : Collection
+    public function getSchemas() : Collection
     {
-        return $this->tables;
+        return $this->schemas;
     }
 
     public function getDirties() : Collection
@@ -38,61 +39,61 @@ class Replicator extends Migrator
         return $this->dirties;
     }
 
-    public function replicate( string $database, string $uuid, array $files ) : void
+    public function replicate( array $files ) : void
     {
-        if( ! $this->hasRunMigrations( $database ) ) throw new Exception( 'No tables migrated yet. Please run artisan migrate.' );
+        if( ! $this->hasRunMigrations() ) throw new Exception( 'No tables migrated yet. Please run artisan migrate.' );
 
-        $this->tables->splice( 0 );
+        $this->schemas->splice( 0 );
 
         $this->dirties->splice( 0 );
 
         foreach( $files as $file )
         {
-            $tables = $this->parser->getTables( $file );
+            $schemas = $this->parser->getSchemas( $file );
 
-            if( $tables->isEmpty() ) throw new Exception( 'No table names found in migration file. Please verify your migrations.' );
+            if( $schemas->isEmpty() ) throw new Exception( "No table name found in migration file. Please verify your migrations." );
 
-            $migration = $this->parser->getMigration( $file, $uuid );
+            $schemas = $schemas->filter( fn( $schema ) => $this->resolveConnection( $schema->connection )->getName() === $this->getConnection() );
 
-            $connection = $migration->getConnection();
+            if( $schemas->isEmpty() ) continue;
 
-            if( $connection && $database != $connection ) continue;
+            $migration = $this->parser->resolveMigration( $file, $schemas );
 
-            $this->runReplication( $file, $migration, $tables, 'up' );
+            $this->runReplication( $migration, $schemas, 'up' );
         }
     }
 
-    public function clean( string $uuid, Collection | null $deletables = null, bool $verbose = false ) : void
+    public function clean( Collection | null $deletables = null, bool $verbose = false ) : void
     {
-        $deletables = $deletables ?? $this->tables;
+        $deletables = $deletables ?? $this->schemas;
 
         if( ! $deletables->count() ) return;
 
         if( $verbose ) $this->write( Info::class, "Rolling back '{$deletables->keys()->implode( ', ' )}' " . Str::plural( 'table replicate', $deletables->count() ) . '.' );
 
-        foreach( $deletables->values() as $file )
+        foreach( $deletables as $deletable )
         {
-            $tables = $this->parser->getTables( $file );
+            $schemas = $this->schemas->values()->filter( fn( $schema ) => $schema->file === $deletable->file );
 
-            $migration = $this->parser->getMigration( $file, $uuid );
+            $migration = $this->parser->resolveMigration( $deletable->file, $schemas );
 
-            $this->runReplication( $file, $migration, $tables, 'down' );
+            $this->runReplication( $migration, $schemas, 'down' );
         }
     }
 
-    protected function runReplication( string $file, Migration $migration, Collection $tables, string $method ) : void
+    protected function runReplication( Migration $migration, Collection $schemas, string $method ) : void
     {
         $connection = $this->resolveConnection( $migration->getConnection() );
 
-        $callback = function() use ( $connection, $file, $migration, $tables, $method )
+        $callback = function() use ( $connection, $migration, $schemas, $method )
         {
             if( method_exists( $migration, $method ) )
             {
-                $tables->each( function( $table ) use ( $method, $file )
+                $schemas->each( function( $schema ) use ( $method )
                 {
-                    if( $method === 'up' ) $this->tables = $this->tables->put( $table, $file );
+                    if( $method === 'up' ) $this->schemas = $this->schemas->put( $schema->getName(), $schema );
 
-                    if( $method === 'down' ) $this->tables->pull( $table );
+                    if( $method === 'down' ) $this->schemas->pull( $schema->getName() );
                 } );
 
                 $this->runMethod( $connection, $migration, $method );
@@ -102,12 +103,12 @@ class Replicator extends Migrator
         $this->getSchemaGrammar( $connection )->supportsSchemaTransactions() && $migration->withinTransaction ? $connection->transaction( $callback ) : $callback();
     }
 
-    protected function compare( string $database, string $uuid, Collection $tables ) : void
+    protected function compare() : void
     {
-        foreach( $tables->keys() as $table )
+        foreach( $this->schemas as $schema )
         {
-            $oldTable = Collection::make( Schema::connection( $database )->getColumnListing( $table ) );
-            $newTable = Collection::make( Schema::connection( $database )->getColumnListing( "{$table}-{$uuid}" ) );
+            $oldTable = Collection::make( Schema::connection( $this->getConnection() )->getColumnListing( $schema->table ) );
+            $newTable = Collection::make( Schema::connection( $this->getConnection() )->getColumnListing( $schema->code ) );
 
             if( $oldTable->isNotEmpty() && $newTable->isNotEmpty() )
             {
@@ -117,42 +118,37 @@ class Replicator extends Migrator
 
                 foreach( $columns as $column )
                 {
-                    try { $oldColumn = Schema::connection( $database )->getColumnType( $table, $column ); } catch ( Exception ) { $oldColumn = null; }
-                    try { $newColumn = Schema::connection( $database )->getColumnType( "{$table}-{$uuid}", $column ); } catch ( Exception ) { $newColumn = null; }
+                    try { $oldColumn = Schema::connection( $this->getConnection() )->getColumnType( $schema->table, $column ); } catch ( Exception ) { $oldColumn = null; }
+                    try { $newColumn = Schema::connection( $this->getConnection() )->getColumnType( $schema->code, $column ); } catch ( Exception ) { $newColumn = null; }
 
                     if( $oldColumn !== $newColumn ) $changes->put( $column, [ 'old' => $oldColumn, 'new' => $newColumn ] );
                 }
 
-                if( $changes->isNotEmpty() ) $this->dirties->put( $table, $changes );
+                if( $changes->isNotEmpty() ) $this->dirties->put( $schema->getName(), $changes );
             }
         }
     }
 
-    public function inspect( string $database, string $uuid ) : void
+    public function inspect() : void
     {
-        $this->compare( $database, $uuid, $this->tables );
+        $this->compare();
 
         if( $this->dirties->isNotEmpty() )
         {
             $this->write( Info::class, 'Migration changes :' );
 
-            foreach( $this->dirties->keys() as $key ) $this->write( Task::class, $this->getMigrationName( $this->tables[ $key ] ) );
+            foreach( $this->dirties->keys() as $key ) $this->write( Task::class, $this->getMigrationName( $this->schemas->get( $key )->file ) );
         }
         else
         {
             $this->write( Info::class, 'No change in migrations' );
         }
 
-        $this->clean( $uuid, $this->tables->filter( fn( $value, $key ) => ! $this->dirties->keys()->contains( $key ) ) );
+        $this->clean( $this->schemas->filter( fn( $value, $key ) => ! $this->dirties->keys()->contains( $key ) ) );
     }
 
-    public function databaseExists( string $connection ) : void
+    public function hasRunMigrations() : bool
     {
-        try { $this->resolveConnection( $connection )->getPdo(); } catch ( Exception ) { throw new Exception( 'Database not found. Please verify your credentials.' ); }
-    }
-
-    public function hasRunMigrations( string $database ) : bool
-    {
-        return ! Collection::make( Schema::connection( $database )->getTables() )->isEmpty();
+        return ! Collection::make( Schema::connection( $this->getConnection() )->getTables() )->isEmpty();
     }
 }

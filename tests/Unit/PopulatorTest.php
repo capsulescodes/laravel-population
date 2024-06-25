@@ -16,9 +16,9 @@ beforeEach( function() : void
 {
     $this->database = Config::get( 'database.default' );
 
-    $this->uuid = Str::orderedUuid()->getHex()->serialize();
-
     $this->replicator = new Replicator( App::make( 'migrator' ), App::make( Parser::class ) );
+
+    $this->replicator->setConnection( $this->database );
 
     $this->loadMigrationsFrom( 'tests/App/Database/Migrations/Databases/one/base' );
 
@@ -28,7 +28,7 @@ beforeEach( function() : void
 
     $this->replicator->path( 'tests/App/Database/Migrations/Databases/one/new/foo_table.php' );
 
-    $this->replicator->replicate( Config::get( 'database.default' ), $this->uuid, $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
+    $this->replicator->replicate( $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
     $this->populator = new Populator();
 
@@ -42,7 +42,7 @@ beforeEach( function() : void
 
 it( 'is dirty after a population occurred', function() : void
 {
-    $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
+    $this->populator->process( $this->database, $this->replicator->getSchemas()->get( 'default.foo' ), $this->formulas, $this->records );
 
     expect( $this->populator->isDirty() )->toBeTrue();
 } );
@@ -52,7 +52,7 @@ it( 'can delete a column', function() : void
 {
     $this->bases->each( function( $base ) : void {  expect( $base->getAttribute( 'baz' ) )->not()->toBeNull(); } );
 
-    $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
+    $this->populator->process( $this->database, $this->replicator->getSchemas()->get( 'default.foo' ), $this->formulas, $this->records );
 
     $records = NewFoo::all();
 
@@ -64,7 +64,7 @@ it( 'can populate a new column', function() : void
 {
     $this->bases->each( function( $base ) : void { expect( $base->getAttribute( 'bar' ) )->toBeNull(); } );
 
-    $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
+    $this->populator->process( $this->database, $this->replicator->getSchemas()->get( 'default.foo' ), $this->formulas, $this->records );
 
     $records = NewFoo::all();
 
@@ -76,7 +76,7 @@ it( 'can populate a modified column', function() : void
 {
     $this->bases->each( function( $base ) : void { expect( $base->getAttribute( 'qux' ) )->toBeInt(); } );
 
-    $this->populator->process( 'foo', $this->database, $this->uuid, $this->formulas, $this->records );
+    $this->populator->process( $this->database, $this->replicator->getSchemas()->get( 'default.foo' ), $this->formulas, $this->records );
 
     $records = NewFoo::all();
 

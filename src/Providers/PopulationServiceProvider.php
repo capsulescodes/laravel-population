@@ -2,15 +2,15 @@
 
 namespace CapsulesCodes\Population\Providers;
 
-use CapsulesCodes\Population\Console\Commands\PopulateCommand;
-use CapsulesCodes\Population\Console\Commands\PopulateRollbackCommand;
+use Illuminate\Support\ServiceProvider;
 use CapsulesCodes\Population\Parser;
+use PhpParser\ParserFactory;
+use PhpParser\NodeTraverser;
+use PhpParser\PrettyPrinter\Standard;
 use CapsulesCodes\Population\Replicator;
 use Illuminate\Foundation\Application;
-use Illuminate\Support\ServiceProvider;
-use PhpParser\NodeTraverser;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard;
+use CapsulesCodes\Population\Console\Commands\PopulateCommand;
+use CapsulesCodes\Population\Console\Commands\PopulateRollbackCommand;
 
 
 class PopulationServiceProvider extends ServiceProvider

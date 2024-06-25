@@ -2,9 +2,10 @@
 
 namespace CapsulesCodes\Population;
 
+use CapsulesCodes\Population\Models\Schema as Data;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 
 class Populator
@@ -17,7 +18,7 @@ class Populator
         return $this->dirty;
     }
 
-    public function process( string $table, string $database, string $uuid, Collection $formulas, Collection $records ) : void
+    public function process( string $database, Data $schema, Collection $formulas, Collection $records ) : void
     {
         $transforms = Collection::make();
 
@@ -47,16 +48,16 @@ class Populator
         {
             $new = $record->replicate();
 
-            $new->setTable( "{$table}-{$uuid}" );
+            $new->setTable( $schema->code );
 
             foreach( $transforms as $column => $transform ) eval( $transform );
 
             $new->save();
         }
 
-        Schema::connection( $database )->dropIfExists( $table );
+        Schema::connection( $database )->dropIfExists( $schema->table );
 
-        Schema::connection( $database )->rename( "{$table}-{$uuid}", $table );
+        Schema::connection( $database )->rename( $schema->code, $schema->table );
 
         $this->dirty = true;
     }

@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 
-class FooTable extends Migration
+class BarTable extends Migration
 {
     public $name = 'foo';
 

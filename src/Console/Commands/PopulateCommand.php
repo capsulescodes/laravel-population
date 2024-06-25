@@ -2,20 +2,21 @@
 
 namespace CapsulesCodes\Population\Console\Commands;
 
+use Illuminate\Database\Console\Migrations\BaseCommand;
+use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Console\ConfirmableTrait;
 use CapsulesCodes\Population\Dumper;
 use CapsulesCodes\Population\Populator;
 use CapsulesCodes\Population\Replicator;
-use Exception;
-use Illuminate\Console\ConfirmableTrait;
-use Illuminate\Console\View\Components\BulletList;
-use Illuminate\Console\View\Components\Error;
-use Illuminate\Console\View\Components\Info;
-use Illuminate\Contracts\Console\Isolatable;
-use Illuminate\Database\Console\Migrations\BaseCommand;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Console\View\Components\Info;
+use Illuminate\Console\View\Components\Error;
+use Illuminate\Console\View\Components\BulletList;
+use CapsulesCodes\Population\Models\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
+use Exception;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\text;
@@ -32,8 +33,6 @@ class PopulateCommand extends BaseCommand implements Isolatable
     protected Dumper $dumper;
     protected Replicator $replicator;
     protected Populator $populator;
-
-    protected string $uuid;
     protected int $status;
 
 
@@ -48,8 +47,6 @@ class PopulateCommand extends BaseCommand implements Isolatable
 
     public function handle() : int
     {
-        $this->uuid = Str::orderedUuid()->getHex()->serialize();
-
         $this->status = 0;
 
         $this->registerShutdownHandler();
@@ -68,15 +65,13 @@ class PopulateCommand extends BaseCommand implements Isolatable
 
                 try
                 {
-                    $this->migrator->databaseExists( $database );
-
                     $this->dumper->copy( $database );
 
-                    $this->migrator->replicate( $database, $this->uuid, $this->migrator->getMigrationFiles( $this->getMigrationPaths() ) );
+                    $this->migrator->replicate( $this->migrator->getMigrationFiles( $this->getMigrationPaths() ) );
 
-                    $this->migrator->inspect( $database, $this->uuid );
+                    $this->migrator->inspect();
 
-                    $this->populate( $database );
+                    $this->populate();
                 }
                 catch( Exception $exception )
                 {
@@ -97,28 +92,30 @@ class PopulateCommand extends BaseCommand implements Isolatable
         register_shutdown_function( function() : void { $this->revert(); } );
     }
 
-    protected function populate( $database ) : void
+    protected function populate() : void
     {
         foreach( $this->migrator->getDirties() as $table => $changes )
         {
-            $this->write( Info::class, "Table '{$table}' has changes" );
+            $schema = $this->migrator->getSchemas()->get( $table );
+
+            $this->write( Info::class, "Table '$schema->table' has changes" );
 
             $this->write( BulletList::class, $changes->map( fn( $change, $column ) => match ( true )
             {
-                ( $change[ 'old' ] && $change[ 'new' ] ) => "update column : '{$column}' => type : {$change[ 'old' ]} > {$change[ 'new' ]}",
-                ( $change[ 'old' ] && ! $change[ 'new' ] ) => "delete column : '{$column}' => type : {$change[ 'old' ]}",
-                ( ! $change[ 'old' ] && $change[ 'new' ] ) => "create column : '{$column}' => type : {$change[ 'new' ]}",
+                ( $change[ 'old' ] && $change[ 'new' ] ) => "update column : '$column' => type : {$change[ 'old' ]} > {$change[ 'new' ]}",
+                ( $change[ 'old' ] && ! $change[ 'new' ] ) => "delete column : '$column' => type : {$change[ 'old' ]}",
+                ( ! $change[ 'old' ] && $change[ 'new' ] ) => "create column : '$column' => type : {$change[ 'new' ]}",
             } ) );
 
-            $confirmed = confirm( "Do you want to proceed on populating the '{$table}' table?", false );
+            $confirmed = confirm( "Do you want to proceed on populating the '$schema->table' table?", false );
 
             if( $confirmed )
             {
-                $this->request( $database, $table, $changes );
+                $this->request( $schema, $changes );
             }
             else
             {
-                $this->migrator->clean( $this->uuid, Collection::make( [ $table => $this->migrator->getTables()->filter( fn( $value, $key ) => $key === $table )->first() ] ), true );
+                $this->migrator->clean( Collection::make( [ $table => $this->migrator->getSchemas()->filter( fn( $value, $key ) => $key === $table )->first() ] ), true );
             }
         }
 
@@ -128,15 +125,15 @@ class PopulateCommand extends BaseCommand implements Isolatable
         }
     }
 
-    protected function request( $database, $table, $changes ) : void
+    protected function request( Schema $schema, Collection $changes ) : void
     {
-        $formulas = Collection::make();
+        $records = $this->load( $schema->table );
 
-        $records = $this->load( $table );
+        $formulas = Collection::make();
 
         if( $records->isEmpty() )
         {
-            $this->write( Info::class, "The '{$table}' table columns have been updated but it seems the table has no records. Skipping record conversion." );
+            $this->write( Info::class, "The '$schema->table' table columns have been updated but it seems the table has no records. Skipping record conversion." );
         }
         else
         {
@@ -144,7 +141,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
             {
                 if( $change[ 'new' ] )
                 {
-                    $input = text( "How would you like to convert the records for the column '{$column}' of type '{$change[ 'new' ]}'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn( $attribute, $model ) => $attribute' );
+                    $input = text( "How would you like to convert the records for the column '$column' of type '{$change[ 'new' ]}'?  'fn( \$attribute, \$model ) => \$attribute'", 'fn( $attribute, $model ) => $attribute' );
 
                     preg_match( '/^\s*fn\s*\(\s*(\$[\w\d]*\s*(?:,\s*\$[\w\d]*)?)?\s*\)\s*=>\s*(.+)\s*/', $input, $matches );
 
@@ -159,7 +156,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
             }
         }
 
-        $this->populator->process( $table, $database, $this->uuid, $formulas, $records );
+        $this->populator->process( $this->migrator->getConnection(), $schema, $formulas, $records );
     }
 
     protected function load( $table = null, $input = null ) : Collection
@@ -170,7 +167,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
 
         if( ! $input )
         {
-            return $this->load( null, text( "The '{$class}' model path does not exist, please provide the correct path.", 'App\\Models\\' ) );
+            return $this->load( null, text( "The '$class' model path does not exist, please provide the correct path.", 'App\\Models\\' ) );
         }
         else
         {
@@ -182,7 +179,7 @@ class PopulateCommand extends BaseCommand implements Isolatable
     {
         if( ! $this->populator->isDirty() )
         {
-            $this->migrator->clean( $this->uuid );
+            $this->migrator->clean();
 
             $this->dumper->remove();
         }

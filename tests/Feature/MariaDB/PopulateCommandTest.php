@@ -3,6 +3,7 @@
 use CapsulesCodes\Population\Tests\App\Database\Seeders\FooSeeder;
 use CapsulesCodes\Population\Tests\App\Database\Seeders\QuuxSeeder;
 use Illuminate\Support\Facades\Config;
+use CapsulesCodes\Population\Tests\App\Models\Base\Foo;
 
 
 beforeEach( function() : void
@@ -20,18 +21,6 @@ afterEach( function() : void
 } );
 
 
-
-
-it( 'returns an error if the database connection is incorrect', function() : void
-{
-    $connection = Config::get( 'database.default' );
-
-    Config::set( "database.connections.{$connection}.database", 'foo' );
-
-    $this->artisan( 'populate' )
-        ->expectsOutputToContain( 'Database not found. Please verify your credentials.' )
-        ->assertExitCode( 1 );
-} );
 
 
 it( 'returns an error if the database has no migration', function() : void

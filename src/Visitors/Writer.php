@@ -2,27 +2,46 @@
 
 namespace CapsulesCodes\Population\Visitors;
 
+use PhpParser\NodeVisitorAbstract;
+use Illuminate\Support\Collection;
 use PhpParser\Node;
+use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\Stmt\Expression;
-use PhpParser\NodeVisitorAbstract;
+use PhpParser\NodeVisitor;
 
 
 class Writer extends NodeVisitorAbstract
 {
-    private string $uuid;
+    private string | null $connection;
+    private Collection $schemas;
 
 
-    public function __construct( string $uuid )
+    public function __construct( Collection $schemas )
     {
-        $this->uuid = $uuid;
+        $this->connection = null;
+        $this->schemas = $schemas;
     }
 
-    public function enterNode( Node $node )
+    public function enterNode( Node $node ) : void
+    {
+        if(
+            $node instanceof ClassMethod &&
+            $node->name instanceof Identifier &&
+            $node->name->name === 'getConnection'
+        )
+        {
+            $connection = $node->stmts[ 0 ]->expr;
+
+            if( $connection instanceof String_ ) $this->connection = $connection->value;
+        }
+    }
+
+    public function leaveNode( Node $node ) : int | null
     {
         if(
             $node instanceof Expression &&
@@ -30,13 +49,23 @@ class Writer extends NodeVisitorAbstract
             $node->expr->var instanceof StaticCall &&
             $node->expr->var->class instanceof Name &&
             $node->expr->var->class->name === 'Schema' &&
+            $node->expr->var->name instanceof Identifier &&
+            $node->expr->var->name->name === 'connection' &&
             $node->expr->name instanceof Identifier &&
             ( $node->expr->name->name == 'create' || $node->expr->name->name == 'dropIfExists' )
         )
         {
-            $arg = $node->expr->args[ 0 ]->value;
+            $connection = $node->expr->var->args[ 0 ]->value;
+            $table = $node->expr->args[ 0 ]->value;
 
-            if( $arg instanceof String_ ) $arg->value = "{$arg->value}-{$this->uuid}";
+            if( $connection instanceof String_ && $table instanceof String_ )
+            {
+                $match = $this->schemas->first( fn( $schema ) => $schema->connection == $connection->value && $schema->table == $table->value );
+
+                if( ! $match ) return NodeVisitor::REMOVE_NODE;
+
+                $table->value = $match->code;
+            }
         }
 
         if(
@@ -48,9 +77,18 @@ class Writer extends NodeVisitorAbstract
             ( $node->expr->name->name == 'create' || $node->expr->name->name == 'dropIfExists' )
         )
         {
-            $arg = $node->expr->args[ 0 ]->value;
+            $table = $node->expr->args[ 0 ]->value;
 
-            if( $arg instanceof String_ ) $arg->value = "{$arg->value}-{$this->uuid}";
+            if( $table instanceof String_ )
+            {
+                $match = $this->schemas->first( fn( $schema ) => $schema->connection == $this->connection && $schema->table == $table->value );
+
+                if( ! $match ) return NodeVisitor::REMOVE_NODE;
+
+                $table->value = $match->code;
+            }
         }
+
+        return null;
     }
 }

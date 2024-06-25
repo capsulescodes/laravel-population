@@ -1,25 +1,23 @@
 <?php
 
-use CapsulesCodes\Population\Parser;
 use CapsulesCodes\Population\Replicator;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Schema;
+use CapsulesCodes\Population\Parser;
 use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 
 beforeEach( function() : void
 {
-    $this->uuid = Str::orderedUuid()->getHex()->serialize();
-
     $this->replicator = new Replicator( App::make( 'migrator' ), App::make( Parser::class ) );
 } );
 
 afterEach( function() : void
 {
-    $this->replicator->clean( $this->uuid );
+    $this->replicator->clean();
 } );
+
 
 
 
@@ -28,7 +26,11 @@ it( 'can replicate existing migrations on a specific MariaDB database', function
 {
     [ $base, $new ] = replicateMigrationsOnMariaDBDatabase( 'two' );
 
-    expect( $new )->toContain( "foo-{$this->uuid}", ...$base );
+    $diff = $new->diff( $base );
+
+    expect( $diff->count() )->toBe( 1 );
+
+    expect( Str::length( $diff->first() ) )->toBe( Str::length( 'foo' ) );
 } );
 
 
@@ -36,27 +38,39 @@ it( 'can replicate existing migrations on multiple specific MariaDB databases', 
 {
     [ $base, $new ] = replicateMigrationsOnMariaDBDatabase( 'one' );
 
-    expect( $new )->toContain( "foo-{$this->uuid}", ...$base );
+    $diff = $new->diff( $base );
+
+    expect( $diff->count() )->toBe( 1 );
+
+    expect( Str::length( $diff->first() ) )->toBe( Str::length( 'foo' ) );
+
+    $this->replicator->clean();
 
     [ $base, $new ] = replicateMigrationsOnMariaDBDatabase( 'two' );
 
-    expect( $new )->toContain( "foo-{$this->uuid}", ...$base );
+    $diff = $new->diff( $base );
+
+    expect( $diff->count() )->toBe( 1 );
+
+    expect( Str::length( $diff->first() ) )->toBe( Str::length( 'foo' ) );
 } );
+
+
 
 
 function replicateMigrationsOnMariaDBDatabase( string $database ) : array
 {
-    Config::set( 'database.default', $database );
+    test()->replicator->setConnection( $database );
 
     test()->loadMigrationsFrom( 'tests/App/Database/Migrations/Databases/one/base' );
 
-    $base = Arr::pluck( Schema::getTables(), 'name' );
+    $base = Collection::make( Schema::getTables() )->pluck( 'name' );
 
     test()->replicator->path( 'tests/App/Database/Migrations/Databases/one/new/foo_table.php' );
 
-    test()->replicator->replicate( $database, test()->uuid, test()->replicator->getMigrationFiles( test()->replicator->paths() ) );
+    test()->replicator->replicate( test()->replicator->getMigrationFiles( test()->replicator->paths() ) );
 
-    $new = Arr::pluck( Schema::getTables(), 'name' );
+    $new = Collection::make( Schema::getTables() )->pluck( 'name' );
 
     test()->artisan( 'migrate:fresh' );
 

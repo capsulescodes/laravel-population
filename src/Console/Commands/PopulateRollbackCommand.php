@@ -2,18 +2,18 @@
 
 namespace CapsulesCodes\Population\Console\Commands;
 
+use Illuminate\Console\Command;
+use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Console\ConfirmableTrait;
 use CapsulesCodes\Population\Dumper;
 use CapsulesCodes\Population\Replicator;
-use Exception;
-use Illuminate\Console\Command;
-use Illuminate\Console\ConfirmableTrait;
-use Illuminate\Console\View\Components\Error;
-use Illuminate\Console\View\Components\Info;
 use Illuminate\Console\View\Components\Warn;
-use Illuminate\Contracts\Console\Isolatable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Console\View\Components\Info;
+use Illuminate\Console\View\Components\Error;
 use Symfony\Component\Console\Input\InputOption;
+use Exception;
 
 
 class PopulateRollbackCommand extends Command implements Isolatable
@@ -39,9 +39,9 @@ class PopulateRollbackCommand extends Command implements Isolatable
 
     public function handle() : int
     {
-        $this->write( Warn::class, "The rollback command will only set back the latest copy of your database(s). You'll have to modify your migrations and models manually." );
-
         $this->status = 0;
+
+        $this->write( Warn::class, "The rollback command will only set back the latest copy of your database(s). You'll have to modify your migrations and models manually." );
 
         $databases = Collection::make( empty( $this->input->getOption( 'database' ) ) ? [ Config::get( 'database.default' ) ] : $this->input->getOption( 'database' ) );
 
@@ -57,8 +57,6 @@ class PopulateRollbackCommand extends Command implements Isolatable
 
                 try
                 {
-                    $this->migrator->databaseExists( $database );
-
                     $this->dumper->revert( $database );
 
                     $this->migrator->resolveConnection( $database )->reconnect();

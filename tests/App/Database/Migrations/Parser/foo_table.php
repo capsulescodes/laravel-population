@@ -9,16 +9,16 @@ return new class extends Migration
 {
     public function up() : void
     {
-        Schema::create( 'bar', function( Blueprint $table ) : void
+        Schema::create( 'foo', function( Blueprint $table ) : void
         {
             $table->id();
-            $table->boolean( 'bar' );
+            $table->boolean( 'foo' );
             $table->timestamps();
         } );
     }
 
     public function down() : void
     {
-        Schema::dropIfExists( 'bar' );
+        Schema::dropIfExists( 'foo' );
     }
 };

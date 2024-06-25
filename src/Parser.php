@@ -2,16 +2,17 @@
 
 namespace CapsulesCodes\Population;
 
-use CapsulesCodes\Population\Visitors\Reader;
-use CapsulesCodes\Population\Visitors\Writer;
-use Illuminate\Database\Migrations\Migration;
+use PhpParser\Parser as PhpParser;
+use PhpParser\NodeTraverser;
+use PhpParser\PrettyPrinter\Standard;
+use PhpParser\ParserFactory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
-use PhpParser\NodeTraverser;
+use CapsulesCodes\Population\Visitors\Reader;
+use CapsulesCodes\Population\Models\Schema;
+use CapsulesCodes\Population\Visitors\Writer;
+use Illuminate\Database\Migrations\Migration;
 use PhpParser\NodeVisitor;
-use PhpParser\Parser as PhpParser;
-use PhpParser\ParserFactory;
-use PhpParser\PrettyPrinter\Standard;
 
 
 class Parser
@@ -28,7 +29,7 @@ class Parser
         $this->printer = $printer;
     }
 
-    public function getTables( string $file ) : Collection
+    public function getSchemas( string $file ) : Collection
     {
         $code = File::get( $file );
 
@@ -38,20 +39,25 @@ class Parser
 
         $this->traverse( $ast, $visitor );
 
-        return Collection::make( $visitor->getData() );
+        return Collection::make( $visitor->getData() )->map( fn( $data ) => new Schema( $data[ 'connection' ], $data[ 'table' ] , $file ) );
     }
 
-    public function getMigration( string $file, string $uuid ) : Migration
+    public function getMigration( string $file, Collection $schemas ) : array
     {
         $code = File::get( $file );
 
         $ast = $this->parser->parse( $code );
 
+        return $this->traverse( $ast, new Writer( $schemas ) );
+    }
+
+    public function resolveMigration( string $file, Collection $schemas ) : Migration
+    {
+        $ast = $this->getMigration( $file, $schemas );
+
         $visitor = new Reader();
 
         $this->traverse( $ast, $visitor );
-
-        $ast = $this->traverse( $ast, new Writer( $uuid ) );
 
         if( $class = $visitor->getName() )
         {

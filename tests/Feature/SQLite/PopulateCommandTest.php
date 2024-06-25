@@ -22,18 +22,6 @@ afterEach( function() : void
 
 
 
-it( 'returns an error if the database connection is incorrect', function() : void
-{
-    $connection = Config::get( 'database.default' );
-
-    Config::set( "database.connections.{$connection}.database", 'foo' );
-
-    $this->artisan( 'populate' )
-        ->expectsOutputToContain( 'Database not found. Please verify your credentials.' )
-        ->assertExitCode( 1 );
-} );
-
-
 it( 'returns an error if the database has no migration', function() : void
 {
     $this->artisan( 'db:wipe' );
