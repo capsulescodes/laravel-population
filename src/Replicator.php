@@ -69,7 +69,7 @@ class Replicator extends Migrator
 
         if( ! $deletables->count() ) return;
 
-        if( $verbose ) $this->write( Info::class, "Rolling back '{$deletables->keys()->implode( ', ' )}' " . Str::plural( 'table replicate', $deletables->count() ) . '.' );
+        if( $verbose ) $this->write( Info::class, "Rolling back '{$deletables->values()->pluck( 'table' )->implode( ', ' )}' " . Str::plural( 'table replicate', $deletables->count() ) . '.' );
 
         foreach( $deletables as $deletable )
         {
