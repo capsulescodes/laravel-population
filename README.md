@@ -159,7 +159,7 @@ php artisan populate --path={path-to-migrations-to-populate} --realpath={true|fa
 
 <br>
 
-- Laravel Population supports SQLite, MySQL, and MariaDB.
+- Laravel Population supports SQLite, MySQL, MariaDB and PostgreSQL.
 - Laravel Population can work with multiple databases.
 - Laravel Population supports both anonymous and named migrations classes.
 - Laravel Population supports multiple table creation in migration files.

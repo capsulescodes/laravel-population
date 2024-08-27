@@ -8,4 +8,5 @@ enum Driver : string
     case SQLite = 'sqlite';
     case MySQL = 'mysql';
     case MariaDB = 'mariadb';
+    case PostgreSQL = 'pgsql';
 }

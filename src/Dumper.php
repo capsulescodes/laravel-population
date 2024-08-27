@@ -71,6 +71,16 @@ class Dumper
 
             if( $result->failed() ) throw new Exception( 'An error occurred while dumping your database. Please verify your credentials.' );
         }
+        elseif( $driver == Driver::PostgreSQL )
+        {
+            $this->filename = "{$connection[ 'database' ]}-{$date}.sql";
+
+            $command = "pg_dump --username={$connection[ 'username' ]} --host={$connection[ 'host' ]} --dbname={$connection[ 'database' ]} --file={$this->disk->path( $this->path )}/{$this->filename}";
+
+            $result = Process::run( $command );
+
+            if( $result->failed() ) throw new Exception( 'An error occurred while dumping your database. Please verify your credentials.' );
+        }
         else
         {
             throw new Exception( 'An error occurred while dumping your database. Connection driver not supported.' );
