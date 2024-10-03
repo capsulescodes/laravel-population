@@ -1,6 +1,6 @@
 .github export-ignore
+art export-ignore
 tests export-ignore
 .gitattributes export-ignore
 .gitignore export-ignore
-capsules-laravel-population-image.png export-ignore
 phpunit.xml export-ignore
