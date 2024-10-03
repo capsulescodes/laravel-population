@@ -2,10 +2,11 @@
 
 namespace CapsulesCodes\Population\Tests\Cases;
 
-use CapsulesCodes\Population\Providers\PopulationServiceProvider;
+use Orchestra\Testbench\TestCase as BaseTestCase;
 use CapsulesCodes\Population\Tests\App\Traits\Configurable;
 use Illuminate\Support\Facades\Process;
-use Orchestra\Testbench\TestCase as BaseTestCase;
+use Illuminate\Support\Env;
+use CapsulesCodes\Population\Providers\PopulationServiceProvider;
 
 
 abstract class MySQLTestCase extends BaseTestCase
@@ -36,9 +37,9 @@ abstract class MySQLTestCase extends BaseTestCase
             'driver' => 'mysql',
             'host' => '127.0.0.1',
             'port' => '3306',
-            'database' => 'laravel_population_mysql_one',
-            'username' => 'root',
-            'password' => '',
+            'database' => Env::get( 'MYSQL_DATABASE_ONE', 'laravel_population_mysql_one' ),
+            'username' => Env::get( 'MYSQL_USERNAME' ),
+            'password' => Env::get( 'MYSQL_PASSWORD' ),
             'unix_socket' => '',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
@@ -55,9 +56,9 @@ abstract class MySQLTestCase extends BaseTestCase
             'driver' => 'mysql',
             'host' => '127.0.0.1',
             'port' => '3306',
-            'database' => 'laravel_population_mysql_two',
-            'username' => 'root',
-            'password' => '',
+            'database' => Env::get( 'MYSQL_DATABASE_TWO', 'laravel_population_mysql_two' ),
+            'username' => Env::get( 'MYSQL_USERNAME' ),
+            'password' => Env::get( 'MYSQL_PASSWORD' ),
             'unix_socket' => '',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',

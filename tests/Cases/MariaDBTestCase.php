@@ -2,10 +2,11 @@
 
 namespace CapsulesCodes\Population\Tests\Cases;
 
-use CapsulesCodes\Population\Providers\PopulationServiceProvider;
+use Orchestra\Testbench\TestCase as BaseTestCase;
 use CapsulesCodes\Population\Tests\App\Traits\Configurable;
 use Illuminate\Support\Facades\Process;
-use Orchestra\Testbench\TestCase as BaseTestCase;
+use Illuminate\Support\Env;
+use CapsulesCodes\Population\Providers\PopulationServiceProvider;
 
 
 abstract class MariaDBTestCase extends BaseTestCase
@@ -36,9 +37,9 @@ abstract class MariaDBTestCase extends BaseTestCase
             'driver' => 'mariadb',
             'host' => '127.0.0.1',
             'port' => '3306',
-            'database' => 'laravel_population_mariadb_one',
-            'username' => 'root',
-            'password' => '',
+            'database' => Env::get( 'MARIADB_DATABASE_ONE', 'laravel_population_mariadb_one' ),
+            'username' => Env::get( 'MARIADB_USERNAME' ),
+            'password' => Env::get( 'MARIADB_PASSWORD' ),
             'unix_socket' => '',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
@@ -55,9 +56,9 @@ abstract class MariaDBTestCase extends BaseTestCase
             'driver' => 'mariadb',
             'host' => '127.0.0.1',
             'port' => '3306',
-            'database' => 'laravel_population_mariadb_two',
-            'username' => 'root',
-            'password' => '',
+            'database' => Env::get( 'MARIADB_DATABASE_TWO','laravel_population_mariadb_two' ),
+            'username' => Env::get( 'MARIADB_USERNAME' ),
+            'password' => Env::get( 'MARIADB_PASSWORD' ),
             'unix_socket' => '',
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',

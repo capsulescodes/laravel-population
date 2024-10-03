@@ -15,4 +15,14 @@
         </include>
     </source>
     <coverage />
+    <php>
+        <env name="MYSQL_USERNAME" value="" force="true" />
+        <env name="MYSQL_PASSWORD" value="" force="true" />
+
+        <env name="MARIADB_USERNAME" value="" force="true" />
+        <env name="MARIADB_PASSWORD" value="" force="true" />
+
+        <env name="POSTGRESQL_USERNAME" value="" force="true" />
+        <env name="POSTGRESQL_PASSWORD" value="" force="true" />
+    </php>
 </phpunit>

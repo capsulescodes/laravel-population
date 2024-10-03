@@ -2,10 +2,11 @@
 
 namespace CapsulesCodes\Population\Tests\Cases;
 
-use CapsulesCodes\Population\Providers\PopulationServiceProvider;
+use Orchestra\Testbench\TestCase as BaseTestCase;
 use CapsulesCodes\Population\Tests\App\Traits\Configurable;
 use Illuminate\Support\Facades\Process;
-use Orchestra\Testbench\TestCase as BaseTestCase;
+use Illuminate\Support\Env;
+use CapsulesCodes\Population\Providers\PopulationServiceProvider;
 
 
 abstract class SQLiteTestCase extends BaseTestCase
@@ -34,7 +35,7 @@ abstract class SQLiteTestCase extends BaseTestCase
         $app[ 'config' ]->set( 'database.connections.one', [
 
             'driver' => 'sqlite',
-            'database' => 'tests/App/Database/laravel-population-sqlite-one.sqlite',
+            'database' => Env::get( 'SQLITE_DATABASE_ONE', 'tests/App/Database/laravel-population-sqlite-one.sqlite' ),
             'prefix' => '',
             'foreign_key_constraints' => true,
 
@@ -43,7 +44,7 @@ abstract class SQLiteTestCase extends BaseTestCase
         $app[ 'config' ]->set( 'database.connections.two', [
 
             'driver' => 'sqlite',
-            'database' => 'tests/App/Database/laravel-population-sqlite-two.sqlite',
+            'database' => Env::get( 'SQLITE_DATABASE_TWO', 'tests/App/Database/laravel-population-sqlite-two.sqlite' ),
             'prefix' => '',
             'foreign_key_constraints' => true,
 

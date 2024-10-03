@@ -3,3 +3,4 @@ build
 vendor
 composer.lock
 .flint.php.local.json
+phpunit.xml

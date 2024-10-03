@@ -5,6 +5,7 @@ namespace CapsulesCodes\Population\Tests\Cases;
 use CapsulesCodes\Population\Providers\PopulationServiceProvider;
 use CapsulesCodes\Population\Tests\App\Traits\Configurable;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Env;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 
@@ -36,9 +37,9 @@ abstract class PostgreSQLTestCase extends BaseTestCase
             'driver' => 'pgsql',
             'host' => '127.0.0.1',
             'port' => '5432',
-            'database' => 'laravel_population_pgsql_one',
-            'username' => '',
-            'password' => '',
+            'database' => Env::get( 'POSTGRESQL_DATABASE_ONE', 'laravel_population_pgsql_one' ),
+            'username' => Env::get( 'POSTGRESQL_USERNAME' ),
+            'password' => Env::get( 'POSTGRESQL_PASSWORD' ),
             'unix_socket' => '',
             'charset' => 'utf8',
             'prefix' => '',
@@ -52,9 +53,9 @@ abstract class PostgreSQLTestCase extends BaseTestCase
             'driver' => 'pgsql',
             'host' => '127.0.0.1',
             'port' => '5432',
-            'database' => 'laravel_population_pgsql_two',
-            'username' => '',
-            'password' => '',
+            'database' => Env::get( 'POSTGRESQL_DATABASE_TWO', 'laravel_population_pgsql_two' ),
+            'username' => Env::get( 'POSTGRESQL_USERNAME' ),
+            'password' => Env::get( 'POSTGRESQL_PASSWORD' ),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
