@@ -176,7 +176,7 @@ In order to run MySQL tests, credentials have to be configured in the intended T
 
 ## Credits
 
-- [Capsules Codes](https://github.com/capsulescodes)
+[Capsules Codes](https://github.com/capsulescodes)
 
 ## License
 
