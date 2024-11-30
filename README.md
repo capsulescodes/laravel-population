@@ -7,7 +7,7 @@ Laravel Population package provides a set of commands that parses your migration
 
 <br>
 
-Typically, your `users` table might have a `fullname` column, but you need two separate columns : `firstname` and `lastname`. However, your database is already full of records.
+Typically, your `users` table might have a `name` column, but you need two separate columns : `first_name` and `last_name`. However, your database is already full of records.
 
 <br>
 
@@ -32,7 +32,7 @@ composer require --dev capsulescodes/laravel-population
 
 <br>
 
-Let's say, your current `users` table have a `fullname` column, but you need two separate columns : `firstname` and `lastname`. First, modify your migration :
+Let's say, your current `users` table have a `name` column, but you need two separate columns : `first_name` and `last_name`. First, modify your migration :
 
 <br>
 
@@ -41,9 +41,9 @@ Let's say, your current `users` table have a `fullname` column, but you need two
 Schema::create( 'users', function( Blueprint $table )
 {
     $table->id();
--    $table->string( 'fullname' );
-+    $table->string( 'firstname' );
-+    $table->string( 'lastname' );
+-    $table->string( 'name' );
++    $table->string( 'first_name' );
++    $table->string( 'last_name' );
 } );
 ...
 ```
@@ -67,21 +67,21 @@ The populate command will display the changes made in the migration files and as
 
    INFO  Table 'users' has changes.
 
-  ⇂ delete column : 'fullname' => type : varchar
-  ⇂ create column : 'firstname' => type : varchar
-  ⇂ create column : 'lastname' => type : varchar
+  ⇂ delete column : 'name' => type : varchar
+  ⇂ create column : 'first_name' => type : varchar
+  ⇂ create column : 'last_name' => type : varchar
 
  ┌ Do you want to proceed on populating the 'users' table? ─────┐
  │ Yes                                                          │
  └──────────────────────────────────────────────────────────────┘
 
- ┌ How would you like to convert the records for the column 'varchar' of type 'string'?  'fn( $attribute, $model ) => $attribute' ┐
- │ fn( $a, $b ) => explode( ' ', $b->fullname )[ 0 ]                                                                                │
- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+ ┌ How would you like to convert the records for the column 'first_name' of type 'varchar'?  'fn( $attribute, $model ) => $attribute' ┐
+ │ fn( $a, $b ) => explode( ' ', $b->name )[ 0 ]                                                                                      │
+ └────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
- ┌ How would you like to convert the records for the column 'lastname' of type 'varchar'?  'fn( $attribute, $model ) => $attribute' ┐
- │ fn( $a, $b ) => explode( ' ', $b->fullname )[ 1 ]                                                                               │
- └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+ ┌ How would you like to convert the records for the column 'last_name' of type 'varchar'?  'fn( $attribute, $model ) => $attribute' ┐
+ │ fn( $a, $b ) => explode( ' ', $b->name )[ 1 ]                                                                                     │
+ └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
    INFO  Population succeeded.
    ```
@@ -94,23 +94,23 @@ Your `users` table has been updated and seeded with converted records. Simple.
 App\Models\User
 {
     id: 1,
--    fullname: "Louie Wolff",
-+    firstname: "Louie",
-+    lastname: "Wolff",
+-    name: "Louie Wolff",
++    first_name: "Louie",
++    last_name: "Wolff",
 },
 App\Models\User
 {
     id: 2,
--    fullname: "Holly Waters",
-+    firstname: "Holly",
-+    lastname: "Waters",
+-    name: "Holly Waters",
++    first_name: "Holly",
++    last_name: "Waters",
 },
 App\Models\User
 {
     id: 3,
--    fullname: "Colton Mueller",
-+    firstname: "Colton",
-+    lastname: "Mueller",
+-    name: "Colton Mueller",
++    first_name: "Colton",
++    last_name: "Mueller",
 },
 ...
 ```
@@ -123,7 +123,7 @@ App\Models\User
 'fn( $attribute, $model ) => $attribute'
 
 # The inital representation of the parameters
-$attribute = 'fullname'
+$attribute = 'name'
 $model = '$user'
 
 # But you can decide to use any Laravel helpers instead
@@ -168,8 +168,7 @@ php artisan populate --path={path-to-migrations-to-populate} --realpath={true|fa
 
 ## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 In order to run MySQL tests, credentials have to be configured in the intended TestCases.
