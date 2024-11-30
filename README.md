@@ -75,7 +75,7 @@ The populate command will display the changes made in the migration files and as
  │ Yes                                                          │
  └──────────────────────────────────────────────────────────────┘
 
- ┌ How would you like to convert the records for the column 'varchar' of type 'string'?  'fn( $attribute, $model ) => $attribute' ┐
+ ┌ How would you like to convert the records for the column 'firstname' of type 'string'?  'fn( $attribute, $model ) => $attribute' ┐
  │ fn( $a, $b ) => explode( ' ', $b->fullname )[ 0 ]                                                                                │
  └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 
