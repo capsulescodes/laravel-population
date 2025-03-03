@@ -149,6 +149,8 @@ class Replicator extends Migrator
 
     public function hasRunMigrations() : bool
     {
-        return ! Collection::make( Schema::connection( $this->getConnection() )->getTables() )->isEmpty();
+        $connection = Schema::connection( $this->getConnection() );
+
+        return Collection::make( $connection->getTables( $connection->getCurrentSchemaName() ) )->isNotEmpty();
     }
 }

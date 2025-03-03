@@ -30,13 +30,15 @@ afterEach( function() : void
 
 it( 'can replicate existing migrations', function() : void
 {
-    $base = Collection::make( Schema::getTables() )->pluck( 'name' );
+    $schema = Schema::connection( $this->replicator->getConnection() )->getCurrentSchemaName();
+
+    $base = Collection::make( Schema::getTables( $schema ) )->pluck( 'name' );
 
     $this->replicator->path( 'tests/App/Database/Migrations/Databases/one/new/foo_table.php' );
 
     $this->replicator->replicate( $this->replicator->getMigrationFiles( $this->replicator->paths() ) );
 
-    $new = Collection::make( Schema::getTables() )->pluck( 'name' );
+    $new = Collection::make( Schema::getTables( $schema ) )->pluck( 'name' );
 
     $diff = $new->diff( $base );
 

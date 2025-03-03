@@ -64,13 +64,15 @@ function replicateMigrationsOnMariaDBDatabase( string $database ) : array
 
     test()->loadMigrationsFrom( 'tests/App/Database/Migrations/Databases/one/base' );
 
-    $base = Collection::make( Schema::getTables() )->pluck( 'name' );
+    $schema = Schema::connection( test()->replicator->getConnection() )->getCurrentSchemaName();
+
+    $base = Collection::make( Schema::getTables( $schema ) )->pluck( 'name' );
 
     test()->replicator->path( 'tests/App/Database/Migrations/Databases/one/new/foo_table.php' );
 
     test()->replicator->replicate( test()->replicator->getMigrationFiles( test()->replicator->paths() ) );
 
-    $new = Collection::make( Schema::getTables() )->pluck( 'name' );
+    $new = Collection::make( Schema::getTables( $schema ) )->pluck( 'name' );
 
     test()->artisan( 'migrate:fresh' );
 
