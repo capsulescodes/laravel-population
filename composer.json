@@ -7,7 +7,7 @@
     "minimum-stability": "stable",
     "authors" : [ { "name" : "Yannick Decat", "email" : "yannick@capsules.codes", "homepage" : "https://capsules.codes" } ],
     "require" : { "php" : "^8.2.0", "nikic/php-parser" : "^5.4.0" },
-    "require-dev" : { "orchestra/testbench" : "^10.1.0", "pestphp/pest" : "^3.8.0" },
+    "require-dev" : { "orchestra/testbench" : "^10.2.2", "pestphp/pest" : "^3.8.2" },
     "autoload" : { "psr-4" : { "CapsulesCodes\\Population\\" : "src/" } },
     "autoload-dev" : { "psr-4" : { "CapsulesCodes\\Population\\Tests\\" : "tests/" } },
     "extra" : { "laravel" : { "providers" : [ "CapsulesCodes\\Population\\Providers\\PopulationServiceProvider" ] } },
