@@ -73,30 +73,25 @@ class Replicator extends Migrator
 
         foreach( $deletables as $deletable )
         {
-            $schemas = $this->schemas->values()->filter( fn( $schema ) => $schema->file === $deletable->file );
+            $connection = $this->resolveConnection( $deletable->connection );
 
-            $migration = $this->parser->resolveMigration( $deletable->file, $schemas );
+            $connection->getSchemaBuilder()->dropIfExists( $deletable->code );
 
-            $this->runReplication( $migration, $schemas, 'down' );
+            $this->schemas->pull( $deletable->getName() );
         }
     }
 
-    protected function runReplication( Migration $migration, Collection $schemas, string $method ) : void
+    protected function runReplication( Migration $migration, Collection $schemas ) : void
     {
         $connection = $this->resolveConnection( $migration->getConnection() );
 
-        $callback = function() use ( $connection, $migration, $schemas, $method )
+        $callback = function() use ( $connection, $migration, $schemas )
         {
-            if( method_exists( $migration, $method ) )
+            if( method_exists( $migration, "up" ) )
             {
-                $schemas->each( function( $schema ) use ( $method )
-                {
-                    if( $method === 'up' ) $this->schemas = $this->schemas->put( $schema->getName(), $schema );
+                $schemas->each( fn( $schema ) => $this->schemas = $this->schemas->put( $schema->getName(), $schema ) );
 
-                    if( $method === 'down' ) $this->schemas->pull( $schema->getName() );
-                } );
-
-                $this->runMethod( $connection, $migration, $method );
+                $this->runMethod( $connection, $migration, "up" );
             }
         };
 
