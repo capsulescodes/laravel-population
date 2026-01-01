@@ -154,7 +154,7 @@ php artisan populate:rollback
 
 
 ```bash
-php artisan populate --path={path-to-migrations-to-populate} --realpath={true|false} --database={database-name} --daptabase={database-name}
+php artisan populate --path={path-to-migrations-to-populate} --realpath={true|false} --database={database-name}
 ```
 
 <br>

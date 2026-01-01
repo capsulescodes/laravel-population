@@ -29,7 +29,7 @@ it( 'can replicate existing migrations on a specific MySQL database', function()
 
     expect( $diff->count() )->toBe( 1 );
 
-    expect( Str::length( $diff->first() ) )->toBe( Str::length( 'foo' ) );
+    expect( Str::length( $diff->first() ) )->toBe( Str::length( "_two_" . now()->format( 'YmdHis' ) ) );
 } );
 
 
@@ -41,7 +41,7 @@ it( 'can replicate existing migrations on multiple specific MySQL databases', fu
 
     expect( $diff->count() )->toBe( 1 );
 
-    expect( Str::length( $diff->first() ) )->toBe( Str::length( 'foo' ) );
+    expect( Str::length( $diff->first() ) )->toBe( Str::length( "_one_" . now()->format( 'YmdHis' ) ) );
 
     $this->replicator->clean();
 
@@ -51,7 +51,7 @@ it( 'can replicate existing migrations on multiple specific MySQL databases', fu
 
     expect( $diff->count() )->toBe( 1 );
 
-    expect( Str::length( $diff->first() ) )->toBe( Str::length( 'foo' ) );
+    expect( Str::length( $diff->first() ) )->toBe( Str::length( "_two_" . now()->format( 'YmdHis' ) ) );
 } );
 
 

@@ -51,7 +51,7 @@ class Replicator extends Migrator
         {
             $schemas = $this->parser->getSchemas( $file );
 
-            if( $schemas->isEmpty() ) throw new Exception( "No table name found in migration file. Please verify your migrations." );
+            if( $schemas->isEmpty() ) throw new Exception( "No table name found in migration file '{$file}'. Please verify your migrations." );
 
             $schemas = $schemas->filter( fn( $schema ) => $this->resolveConnection( $schema->connection )->getName() === $this->getConnection() );
 

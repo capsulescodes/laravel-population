@@ -2,8 +2,6 @@
 
 namespace CapsulesCodes\Population\Models;
 
-use Illuminate\Support\Str;
-
 
 class Schema
 {
@@ -17,7 +15,7 @@ class Schema
     {
         $this->connection = $connection;
         $this->table = $table;
-        $this->code = Str::random( Str::length( $this->table ) );
+        $this->code = "_" . $this->table . "_" . now()->format( 'YmdHis' );
         $this->file = $file;
     }
 

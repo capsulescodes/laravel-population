@@ -44,7 +44,7 @@ it( 'can replicate existing migrations', function() : void
 
     expect( $diff->count() )->toBe( 1 );
 
-    expect( Str::length( $diff->first() ) )->toBe( Str::length( 'foo' ) );
+    expect( Str::length( $diff->first() ) )->toBe( Str::length( "_foo_" . now()->format( 'YmdHis' ) ) );
 } );
 
 
